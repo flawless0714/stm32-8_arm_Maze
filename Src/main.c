@@ -35,27 +35,38 @@
   *
   ******************************************************************************
   */
+
+/* TODO ------------------------------------------------------------------*/
+/* 1. In HAL_SYSTICK_Callback(). 
+ * 
+ */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "maze.h"
 #include "stm32f4xx_hal.h"
 
+#define SysTickIT_500us 2000
+
 /* USER CODE BEGIN Includes */
-
+#include "maze.h"
 /* USER CODE END Includes */
-
+/* Extern variables -----------------------------------------------------------*/
+__IO extern uint8_t ADC_Maximum_capture_times; 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
-
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-uint8_t str[5];//"AT\r\n";
-uint32_t ADC_BUF[8], readValue[2], checkVal;
-uint32_t ADC_tickStart, ADC_errorVal;//debug3; bool debug = true;
-Maze_arm mazeArm[8] = {0, 0, 0, false, no_food};
+//bool calibrating = true;
+uint8_t str[5], Dtimes; //"AT\r\n";
+uint8_t asLoop; /* var for LOOP use */
+__IO uint32_t ADC_BUF[8];
+uint16_t checkVal;
+/* DEBUG */uint32_t endTime, startTime;
+__IO uint32_t SysTickITtimes;
+__IO extern Maze_arm mazeArm[8];
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -73,36 +84,25 @@ static void MX_ADC1_Init(void);
 /* USER CODE BEGIN 0 */
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
+  /*
   if (hadc->Instance == ADC1)
   {
 		str[0] = (uint8_t) (ADC_BUF[0] / 100);
   }
-}
-
-void ADC_Calibrator(void)
-{
-  /*
-  if ((ADC_BUF[0] > 2000) && debug && debug2 > 10000) { debug = false;  startTime = HAL_GetTick(); debug3 = ADC_BUF[0];}
-  //uint16_t t1 = ADC_BUF[0], t2 = ADC_BUF[0], t3 = ADC_BUF[0], t4 = ADC_BUF[0], t5 = ADC_BUF[0];
-  //if (t1 == t2) t1++;
-
-  if ((ADC_BUF[0] < 2000) && !debug) 
-  {
-    endTime = HAL_GetTick();
-    endTime++;
-  }
   */
-  if ((checkVal + 130) < ADC_BUF[0]) /* we can now catch the trash value */
-  {
-    ADC_errorVal = ADC_BUF[0];
-    ADC_tickStart = HAL_GetTick();
+	if (1 <= ADC_Maximum_capture_times && ADC_Maximum_capture_times <= 5)
+	{
+    if (ADC_Maximum_capture_times == 5) ADC_Maximum_capture_times++;
+    mazeArm[0].Dist = ADC_BUF[0];
   }
-  checkVal = ADC_BUF[0];
-  if ( (HAL_GetTick() -- 2) > ADC_tickStart &&)
-  {
-
-  }
+	
 }
+void HAL_SYSTICK_Callback(void)
+{
+  SysTickITtimes++; /* TODO: test if this tick can be replaced with uwtick */
+
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -142,23 +142,43 @@ int main(void)
   //HAL_ADC_Start_IT(&hadc1);
 	__HAL_UART_ENABLE_IT(&huart3, UART_IT_RXNE);
   /* USER CODE END 2 */
-  /* for debug, and IR maybe used this to stabilize its output */ HAL_Delay(3000);
-  checkVal = ADC_BUF[0];
+  
+  /* for debug, and IR maybe used this to stabilize its output */ //HAL_Delay(100); /* this delay should only have 50ms since the SysTick is set to half of usual */
+  //for (asLoop = 0; asLoop < 8; asLoop++)
+  //mazeArm[asLoop].Dist = ADC_BUF[asLoop];
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  
+  //endTime = HAL_GetTick();
+  //startTime = HAL_GetTick();
   while (1)
   {
   /* USER CODE END WHILE */
-		HAL_UART_Transmit(&huart3, &str[0], 1, 1000);
-    //HAL_Delay(500);
-    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_15);
-    ADC_Calibrator();
-		/* USER CODE BEGIN 3 */
-		
+    //startTime = HAL_GetTick();
+    while (ADC_Maximum_capture_times >= 6)
+      ADC_Calibrator();
+    if (1 <= ADC_Maximum_capture_times && ADC_Maximum_capture_times < 6 && mazeArm[0].Dist > 570) 
+		{
+				HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
+				Dtimes++;
+		}
+		/*	
+		if (1 <= ADC_Maximum_capture_times && ADC_Maximum_capture_times < 6 && (SysTickITtimes % 10000 == 0))
+		{
+			  //Get_IR_Dist();
+				str[0] = Dtimes;
+				HAL_UART_Transmit_IT(&huart3, &str[0], 1);
+				//HAL_UART_Transmit(&huart3, &str[0], 1, 0);
+		}
+		*/
+    //{
+    //  Get_IR_Dist();
+    //  HAL_UART_Transmit(&huart3, &str[0], 1, 100);
+    //}
+		//HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
+ 
+		/* USER CODE BEGIN 3 */		
   }
   /* USER CODE END 3 */
-
 }
 
 /**
@@ -208,7 +228,7 @@ void SystemClock_Config(void)
 
     /**Configure the Systick interrupt time 
     */
-  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
+  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000000);//SysTickIT_500us); /* 1000 was replaced with SysTickIT_500us since we need SysTick_Handler work every 500us (T = tick * 1/SYSCLK, where SYSCLK is AHB/8 or AHB clock) */
 
     /**Configure the Systick 
     */
@@ -228,7 +248,7 @@ static void MX_ADC1_Init(void)
     */
   hadc1.Instance = ADC1;
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
-  hadc1.Init.Resolution = ADC_RESOLUTION_12B;
+  hadc1.Init.Resolution = ADC_RESOLUTION_10B;
   hadc1.Init.ScanConvMode = ENABLE;
   hadc1.Init.ContinuousConvMode = ENABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
@@ -247,7 +267,7 @@ static void MX_ADC1_Init(void)
     */
   sConfig.Channel = ADC_CHANNEL_1;
   sConfig.Rank = 1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_84CYCLES;
+  sConfig.SamplingTime = ADC_SAMPLETIME_144CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
