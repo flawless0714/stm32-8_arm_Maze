@@ -10,21 +10,20 @@
 #include <stdbool.h>
 
 /* Function declaration-------------------------------------------------------*/
-void ADC_Calibrator(void); /* once the ADC sample times > 1000000 times, it may start have deviation */
-void Get_IR_Dist(void);
-
+void Maze_Struct_Init(void);
+void Maze_Rat_Detect(void);
 /** 
-  * @brief Maze_arm_food Enum which stands for state of food in the arm  
+  * @brief State of maze.  
   */
 typedef enum
 {
     WAIT_FOR_RAT = 1,
     RAT_NOT_ENTERED,
     RAT_ENTERED,
-    TRANING_END
+    TRAINING_END
 }Maze_state; 
 /** 
-  * @brief Maze_arm_food Enum which stands for state of food in the arm  
+  * @brief State of food in the arm.
   */ 
 typedef enum
 {
@@ -34,33 +33,35 @@ typedef enum
 }Maze_arm_food;
 
 /** 
-  * @brief Maze_arm Structure definition of arm in Maze  
+  * @brief The variability found using tick1 and tick2 with converted ADC value.
   */ 
 typedef struct
 {
-    uint32_t noiseStartTick;
-    uint16_t Dist;
-    uint8_t LongTerm_err;
-    uint8_t ShortTerm_err;
-    bool    isLastEnter;
-    bool    Enable;            
-    Maze_arm_food Food;
-}Maze_arm;
-
-/** 
-  * @brief Variability The variability found using tick1 and tick2 with value Dist 
-  */ 
-typedef struct
-{
-    uint32_t startTick;
-    uint32_t endTick;
+    uint32_t startTick; /* no use yet */
+    uint32_t endTick; /* no use yet  */
     uint32_t delta;
 }ADC_Variability;
 
+/** 
+  * @brief Structure definition of arm in Maze.
+  */ 
+typedef struct
+{
+    uint8_t LongTerm_err;
+    uint8_t ShortTerm_err;
+    bool    isLastEnter;           
+    Maze_arm_food Food;
+    ADC_Variability Variability;
+}Maze_arm;
+/** 
+  * @brief Struct for 8_Arm_Maze
+  */ 
 typedef struct
 {
     Maze_arm Arm[8];
     Maze_state State;
+    uint8_t FoodCount;
+    uint8_t LastEnteredArm;
 }Maze;
 
 

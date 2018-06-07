@@ -1,70 +1,371 @@
 #include "maze.h"
 
 extern ADC_HandleTypeDef hadc1;
-__IO extern uint32_t ADC_BUF[8];
-__IO extern uint32_t  SysTickITtimes;
-//extern bool calibrating;
+extern __IO uint32_t ADC_BUF[8];
 extern uint8_t str[5];
-uint32_t tickEnd, L_SysTickITtimes;
-//__IO bool ADC_Halt = false; /* make ADC more stable with no work while */
-__IO uint8_t ADC_Maximum_capture_times = 9; 
-__IO Maze_arm mazeArm[8] = {{0, 0, 0, 0, false, true, no_food},
-                       {0, 0, 0, 0, false, true, no_food},
-                       {0, 0, 0, 0, false, true, no_food},
-                       {0, 0, 0, 0, false, true, no_food},
-                       {0, 0, 0, 0, false, true, no_food},
-                       {0, 0, 0, 0, false, true, no_food},
-                       {0, 0, 0, 0, false, true, no_food},
-                       {0, 0, 0, 0, false, true, no_food}};
-
-
-void ADC_Calibrator(void)
+__IO uint32_t Maze_LastEnterTick;
+__IO Maze maze = {{0},WAIT_FOR_RAT };
+                 
+void Maze_Init(void)
 {
-/*
-  for (asLoop = 0; asLoop < 8; asLoop++) 
-  if ((ADC_BUF[asLoop] > (mazeArm[asLoop].Dist + 130)) && mazeArm[asLoop].Enable) { mazeArm[asLoop].noiseStartTick = HAL_GetTick(); mazeArm[asLoop].Enable = false;}
-
-  for (asLoop = 0; asLoop < 8; asLoop++)
+  uint8_t i;
+  Maze_LastEnterTick = 0; /* tick used in rat detection */
+  for (i = 0; i < 8; i++)
   {
-    if ( (HAL_GetTick() - 2) > mazeArm[asLoop].noiseStartTick)  CAUTION: after -2 is performed, the result should less than startTime + 10, as the next noise is coming. 
+    maze.Arm[i].LongTerm_err = 0;
+    maze.Arm[i].ShortTerm_err = 0;
+    maze.Arm[i].isLastEnter = false;
+    maze.Arm[i].Food = no_food; /* WARN: arm with food its enum is food_exist */
+    maze.Arm[i].Variability.startTick = 0;
+    maze.Arm[i].Variability.endTick = 0;
+    maze.Arm[i].Variability.delta = 0;
+  }
+  maze.State = WAIT_FOR_RAT;
+  maze.FoodCount = 0;
+  maze.LastEnteredArm = 10; /* sthould not be value beteween 0~7 since they are arm symbol */
+}
+
+void Maze_Rat_Detect(void)
+{
+  uint8_t i;
+  if ((Maze_LastEnterTick + 100) <= HAL_GetTick())
+  {
+    Maze_LastEnterTick = HAL_GetTick(); /* refresh the tick */
+    for (i = 0; i < 8; i++)
+      maze.Arm[i].Variability.delta = 0;
+
+  }
+  switch (maze.State)
+  {
+    case WAIT_FOR_RAT: /* the state is being changed once position at center  is triggered */
     {
-      mazeArm[asLoop].Enable = true;
-      mazeArm[asLoop].Dist = (uint16_t) ADC_BUF[asLoop];
-    } 
+      for (i = 0; i < 8; i++)
+      {
+        switch (i) /* use another switch case to dealing with different characteristic of IRs, TODO: the value can be macroed, especially magic number 10000 */
+        {
+          case 0:
+          {
+            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 10000)
+              maze.State = RAT_NOT_ENTERED;
+            break;
+          }
+          case 1:
+          {
+            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 10000)
+              maze.State = RAT_NOT_ENTERED;
+            break;
+          }
+          case 2:
+          {
+            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 10000)
+              maze.State = RAT_NOT_ENTERED;
+            break;
+          }
+          case 3:
+          {
+            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 10000)
+              maze.State = RAT_NOT_ENTERED;
+            break;
+          }
+          case 4:
+          {
+            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 10000)
+              maze.State = RAT_NOT_ENTERED;
+            break;
+          }
+          case 5:
+          {
+            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 10000)
+              maze.State = RAT_NOT_ENTERED;
+            break;
+          }
+          case 6:
+          {
+            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 10000)
+              maze.State = RAT_NOT_ENTERED;
+            break;
+          }
+          case 7:
+          {
+            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 10000)
+              maze.State = RAT_NOT_ENTERED;
+            break;
+          }
+        }
+      }
+      break;
+    }
+    case RAT_NOT_ENTERED: /* the state is being changed once position Dc is triggered */
+    {
+       for (i = 0; i < 8; i++)
+      {
+        switch (i) /* use another switch case to dealing with different characteristic of IRs, TODO: the value can be macroed */
+        {
+          case 0:
+          {
+            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 10000)
+            {
+              maze.State = RAT_ENTERED;
+              if (i == maze.LastEnteredArm) /* isLastArmEntered ? */
+                maze.Arm[i].ShortTerm_err++;
+              maze.LastEnteredArm = i;
+              if (maze.Arm[i].Food == food_exist) /* food counting */
+              {
+                maze.Arm[i].Food = food_ate;
+                maze.FoodCount++;
+              }
+              else if(maze.Arm[i].Food == no_food && maze.Arm[i].LongTerm_err <= 4)
+                maze.Arm[i].LongTerm_err++;
+            }
+            break;
+          }
+          case 1:
+          {
+            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 10000)
+            {
+              maze.State = RAT_ENTERED;
+              if (i == maze.LastEnteredArm) /* isLastArmEntered ? */
+                maze.Arm[i].ShortTerm_err++;
+              maze.LastEnteredArm = i;
+              if (maze.Arm[i].Food == food_exist)
+              {
+                maze.Arm[i].Food = food_ate;
+                maze.FoodCount++;
+              }
+              else if(maze.Arm[i].Food == no_food && maze.Arm[i].LongTerm_err <= 4)
+                maze.Arm[i].LongTerm_err++;
+            }
+            break;
+          }
+          case 2:
+          {
+            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 10000)
+            {
+              maze.State = RAT_ENTERED;
+              if (i == maze.LastEnteredArm) /* isLastArmEntered ? */
+                maze.Arm[i].ShortTerm_err++;
+              maze.LastEnteredArm = i;
+              if (maze.Arm[i].Food == food_exist)
+              {
+                maze.Arm[i].Food = food_ate;
+                maze.FoodCount++;
+              }
+              else if(maze.Arm[i].Food == no_food && maze.Arm[i].LongTerm_err <= 4)
+                maze.Arm[i].LongTerm_err++;
+            }
+            break;
+          }
+          case 3:
+          {
+            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 10000)
+            {
+              maze.State = RAT_ENTERED;
+              if (i == maze.LastEnteredArm) /* isLastArmEntered ? */
+                maze.Arm[i].ShortTerm_err++;
+              maze.LastEnteredArm = i;
+              if (maze.Arm[i].Food == food_exist)
+              {
+                maze.Arm[i].Food = food_ate;
+                maze.FoodCount++;
+              }
+              else if(maze.Arm[i].Food == no_food && maze.Arm[i].LongTerm_err <= 4)
+                maze.Arm[i].LongTerm_err++;
+            }
+            break;
+          }
+          case 4:
+          {
+            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 10000)
+            {
+              maze.State = RAT_ENTERED;
+              if (i == maze.LastEnteredArm) /* isLastArmEntered ? */
+                maze.Arm[i].ShortTerm_err++;
+              maze.LastEnteredArm = i;
+              if (maze.Arm[i].Food == food_exist)
+              {
+                maze.Arm[i].Food = food_ate;
+                maze.FoodCount++;
+              }
+              else if(maze.Arm[i].Food == no_food && maze.Arm[i].LongTerm_err <= 4)
+                maze.Arm[i].LongTerm_err++;
+            }
+            break;
+          }
+          case 5:
+          {
+            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 10000)
+            {
+              maze.State = RAT_ENTERED;
+              if (i == maze.LastEnteredArm) /* isLastArmEntered ? */
+                maze.Arm[i].ShortTerm_err++;
+              maze.LastEnteredArm = i;
+              if (maze.Arm[i].Food == food_exist)
+              {
+                maze.Arm[i].Food = food_ate;
+                maze.FoodCount++;
+              }
+              else if(maze.Arm[i].Food == no_food && maze.Arm[i].LongTerm_err <= 4)
+                maze.Arm[i].LongTerm_err++;
+            }
+            break;
+          }
+          case 6:
+          {
+            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 10000)
+            {
+              maze.State = RAT_ENTERED;
+              if (i == maze.LastEnteredArm) /* isLastArmEntered ? */
+                maze.Arm[i].ShortTerm_err++;
+              maze.LastEnteredArm = i;
+              if (maze.Arm[i].Food == food_exist)
+              {
+                maze.Arm[i].Food = food_ate;
+                maze.FoodCount++;
+              }
+              else if(maze.Arm[i].Food == no_food && maze.Arm[i].LongTerm_err <= 4)
+                maze.Arm[i].LongTerm_err++;
+            }
+            break;
+          }
+          case 7:
+          {
+            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 10000)
+            {
+              maze.State = RAT_ENTERED;
+              if (i == maze.LastEnteredArm) /* isLastArmEntered ? */
+                maze.Arm[i].ShortTerm_err++;
+              maze.LastEnteredArm = i;
+              if (maze.Arm[i].Food == food_exist)
+              {
+                maze.Arm[i].Food = food_ate;
+                maze.FoodCount++;
+              }
+              else if(maze.Arm[i].Food == no_food && maze.Arm[i].LongTerm_err <= 4)
+                maze.Arm[i].LongTerm_err++;
+            }
+            break;
+          }
+        }
+      }
+      return;
+    }
+    case RAT_ENTERED: /* RAT_NOT_ENTERED is triggered by Da */
+    {
+      if (maze.FoodCount >= 4)
+      {
+        maze.State = TRAINING_END;
+        return;
+      }
+      for (i = 0; i < 8; i++)
+      {
+        switch (i) /* use another switch case to dealing with different characteristic of IRs, TODO: the value can be macroed */
+        {
+          case 0:
+          {
+            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 10000)
+              maze.State = RAT_NOT_ENTERED;
+            break;
+          }
+          case 1:
+          {
+            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 10000)
+              maze.State = RAT_NOT_ENTERED;
+            break;
+          }
+          case 2:
+          {
+            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 10000)
+              maze.State = RAT_NOT_ENTERED;
+            break;
+          }
+          case 3:
+          {
+            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 10000)
+              maze.State = RAT_NOT_ENTERED;
+            break;
+          }
+          case 4:
+          {
+            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 10000)
+              maze.State = RAT_NOT_ENTERED;
+            break;
+          }
+          case 5:
+          {
+            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 10000)
+              maze.State = RAT_NOT_ENTERED;
+            break;
+          }
+          case 6:
+          {
+            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 10000)
+              maze.State = RAT_NOT_ENTERED;
+            break;
+          }
+          case 7:
+          {
+            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 10000)
+              maze.State = RAT_NOT_ENTERED;
+            break;
+          }
+        }
+      }
+      return;
+    }
+    case TRAINING_END:
+    {
+      return;
+    }
   }
-*/
-  if (((ADC_BUF[0] > 570) && mazeArm[0].Enable) || ((mazeArm[0].Dist != 0) && ((mazeArm[0].Dist + 70) < (ADC_BUF[0]))))
-  {
-    //mazeArm[0].noiseStartTick = HAL_GetTick();
-    mazeArm[0].Enable         = false; /* enable SysTickIT */
-    L_SysTickITtimes = SysTickITtimes;
-		HAL_ADC_Stop_DMA(&hadc1);
-	
-  }
-  else
-	return;
-  /*
-  if (ADC_BUF[0] < (mazeArm[0].Dist + 70) && mazeArm[0].Enable == false)
-    tickEnd = HAL_GetTick();
-  else 
-	return;
-  */
-  while (!(SysTickITtimes == L_SysTickITtimes + 500)); /* block till 500us passed */
-  /*
-  SysTick->CTRL &= ~(SysTick_CTRL_COUNTFLAG_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk); /* disable SysTickIT 
-  SysTick->LOAD  = (uint32_t)(167999UL); /* 168000 - 1, spec: cortexM4 programming p247 
-  SysTick->VAL   = 0UL;
-  SysTick->CTRL  = SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk; 
-  */
-  HAL_ADC_Start_DMA(&hadc1, ADC_BUF, 8);
-  ADC_Maximum_capture_times = 0;
+    //HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);//maze.Arm[0].Variability.startTick = uwTick;
 }
-/**
-  * @brief  
-  * @retval None
-  */
-void Get_IR_Dist(void)
-{
-	str[0] = (uint8_t) (transferFunctionLUT5V[mazeArm[0].Dist/4]);
-}
-/*-------------------EOF------------------*/
+
+/************************ flawless0714 *****END OF FILE****/

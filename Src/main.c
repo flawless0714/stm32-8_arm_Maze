@@ -50,7 +50,6 @@
 #include "maze.h"
 /* USER CODE END Includes */
 /* Extern variables -----------------------------------------------------------*/
-__IO extern uint8_t ADC_Maximum_capture_times; 
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
@@ -60,13 +59,7 @@ UART_HandleTypeDef huart3;
 /* Private variables ---------------------------------------------------------*/
 //bool calibrating = true;
 uint8_t str[5], Dtimes; //"AT\r\n";
-uint8_t asLoop; /* var for LOOP use */
 __IO uint32_t ADC_BUF[8];
-uint16_t checkVal;
-/* DEBUG */uint32_t endTime, startTime;
-__IO uint32_t SysTickITtimes;
-__IO extern Maze_arm mazeArm[8];
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -90,16 +83,13 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 		str[0] = (uint8_t) (ADC_BUF[0] / 100);
   }
   */
-	if (1 <= ADC_Maximum_capture_times && ADC_Maximum_capture_times <= 5)
-	{
-    if (ADC_Maximum_capture_times == 5) ADC_Maximum_capture_times++;
-    mazeArm[0].Dist = ADC_BUF[0];
-  }
+
+  
 	
 }
 void HAL_SYSTICK_Callback(void)
 {
-  SysTickITtimes++; /* TODO: test if this tick can be replaced with uwtick */
+  /* TODO: test if this tick can be replaced with uwtick */
 
 }
 
@@ -152,30 +142,8 @@ int main(void)
   //startTime = HAL_GetTick();
   while (1)
   {
-  /* USER CODE END WHILE */
-    //startTime = HAL_GetTick();
-    while (ADC_Maximum_capture_times >= 6)
-      ADC_Calibrator();
-    if (1 <= ADC_Maximum_capture_times && ADC_Maximum_capture_times < 6 && mazeArm[0].Dist > 570) 
-		{
-				HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
-				Dtimes++;
-		}
-		/*	
-		if (1 <= ADC_Maximum_capture_times && ADC_Maximum_capture_times < 6 && (SysTickITtimes % 10000 == 0))
-		{
-			  //Get_IR_Dist();
-				str[0] = Dtimes;
-				HAL_UART_Transmit_IT(&huart3, &str[0], 1);
-				//HAL_UART_Transmit(&huart3, &str[0], 1, 0);
-		}
-		*/
-    //{
-    //  Get_IR_Dist();
-    //  HAL_UART_Transmit(&huart3, &str[0], 1, 100);
-    //}
-		//HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
- 
+    /* USER CODE END WHILE */ 
+    Maze_Rat_Detect();
 		/* USER CODE BEGIN 3 */		
   }
   /* USER CODE END 3 */
@@ -228,7 +196,7 @@ void SystemClock_Config(void)
 
     /**Configure the Systick interrupt time 
     */
-  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000000);//SysTickIT_500us); /* 1000 was replaced with SysTickIT_500us since we need SysTick_Handler work every 500us (T = tick * 1/SYSCLK, where SYSCLK is AHB/8 or AHB clock) */
+  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);//SysTickIT_500us);
 
     /**Configure the Systick 
     */

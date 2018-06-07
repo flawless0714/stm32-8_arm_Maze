@@ -43,7 +43,6 @@
 extern DMA_HandleTypeDef hdma_adc1;
 extern ADC_HandleTypeDef hadc1;
 extern UART_HandleTypeDef huart3;
-__IO extern uint8_t ADC_Maximum_capture_times;
 
 extern uint32_t SysTickITtimes;
 //uint32_t tickStart, tickend;
@@ -243,7 +242,6 @@ void DMA2_Stream0_IRQHandler(void)
     tickend++;
   }
   */
-  ADC_Maximum_capture_times++;
   HAL_DMA_IRQHandler(&hdma_adc1);
   /* USER CODE BEGIN DMA2_Stream0_IRQn 1 */
 
