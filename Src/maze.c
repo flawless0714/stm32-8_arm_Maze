@@ -5,6 +5,7 @@ extern __IO uint32_t ADC_BUF[8];
 extern uint8_t str[5];
 __IO uint32_t Maze_LastEnterTick;
 __IO Maze maze = {{0},WAIT_FOR_RAT };
+__IO uint32_t debugMostValue = 0;
                  
 void Maze_Init(void)
 {
@@ -15,7 +16,7 @@ void Maze_Init(void)
     maze.Arm[i].LongTerm_err = 0;
     maze.Arm[i].ShortTerm_err = 0;
     maze.Arm[i].isLastEnter = false;
-    maze.Arm[i].Food = no_food; /* WARN: arm with food its enum is food_exist */
+    maze.Arm[i].Food = no_food; /* WARN: arm with food has enum food_exist */
     maze.Arm[i].Variability.startTick = 0;
     maze.Arm[i].Variability.endTick = 0;
     maze.Arm[i].Variability.delta = 0;
@@ -28,7 +29,7 @@ void Maze_Init(void)
 void Maze_Rat_Detect(void)
 {
   uint8_t i;
-  if ((Maze_LastEnterTick + 100) <= HAL_GetTick())
+  if ((Maze_LastEnterTick + 500) <= HAL_GetTick())
   {
     Maze_LastEnterTick = HAL_GetTick(); /* refresh the tick */
     for (i = 0; i < 8; i++)
@@ -45,66 +46,76 @@ void Maze_Rat_Detect(void)
         {
           case 0:
           {
-            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
-              maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 10000)
-              maze.State = RAT_NOT_ENTERED;
+            if (ADC_BUF[0] == 49 || ADC_BUF[0] == 50) /*&& (ADC_BUF[0] < 425)*///((ADC_BUF[i] > 121) && (ADC_BUF[i] < 125))
+            {
+							maze.Arm[0].Variability.delta++;
+							if (debugMostValue < maze.Arm[0].Variability.delta)
+								debugMostValue = maze.Arm[0].Variability.delta;
+						}  
+            if (maze.Arm[0].Variability.delta >= 25000) /* valid: 33397@200ms noise: 6479@200ms */
+						{
+						  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);
+							//maze.State = RAT_NOT_ENTERED;
+						}
             break;
           }
           case 1:
           {
-            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+            if (ADC_BUF[1] == 50 || ADC_BUF[1] == 49)
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 10000)
-              maze.State = RAT_NOT_ENTERED;
+            if (maze.Arm[i].Variability.delta >= 25000)
+            {
+						  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
+							//maze.State = RAT_NOT_ENTERED;
+						}
             break;
           }
           case 2:
           {
             if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 10000)
-              maze.State = RAT_NOT_ENTERED;
+            if (maze.Arm[i].Variability.delta >= 50000)
+              //maze.State = RAT_NOT_ENTERED;
             break;
           }
           case 3:
           {
             if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 10000)
-              maze.State = RAT_NOT_ENTERED;
+            if (maze.Arm[i].Variability.delta >= 50000)
+              //maze.State = RAT_NOT_ENTERED;
             break;
           }
           case 4:
           {
             if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 10000)
-              maze.State = RAT_NOT_ENTERED;
+            if (maze.Arm[i].Variability.delta >= 50000)
+              //maze.State = RAT_NOT_ENTERED;
             break;
           }
           case 5:
           {
             if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 10000)
-              maze.State = RAT_NOT_ENTERED;
+            if (maze.Arm[i].Variability.delta >= 50000)
+              //maze.State = RAT_NOT_ENTERED;
             break;
           }
           case 6:
           {
             if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 10000)
-              maze.State = RAT_NOT_ENTERED;
+            if (maze.Arm[i].Variability.delta >= 50000)
+              //maze.State = RAT_NOT_ENTERED;
             break;
           }
           case 7:
           {
             if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 10000)
-              maze.State = RAT_NOT_ENTERED;
+            if (maze.Arm[i].Variability.delta >= 50000)
+              //maze.State = RAT_NOT_ENTERED;
             break;
           }
         }
@@ -119,7 +130,7 @@ void Maze_Rat_Detect(void)
         {
           case 0:
           {
-            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+            if (ADC_BUF[0] == 49 || ADC_BUF[0] == 50)
               maze.Arm[i].Variability.delta++;
             if (maze.Arm[i].Variability.delta >= 10000)
             {
@@ -139,7 +150,7 @@ void Maze_Rat_Detect(void)
           }
           case 1:
           {
-            if ((ADC_BUF[i] > 111) && (ADC_BUF[i] < 113))
+            if (ADC_BUF[1] == 50 || ADC_BUF[1] == 49)
               maze.Arm[i].Variability.delta++;
             if (maze.Arm[i].Variability.delta >= 10000)
             {

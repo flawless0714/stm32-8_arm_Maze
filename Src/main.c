@@ -40,6 +40,10 @@
 /* 1. In HAL_SYSTICK_Callback(). 
  * 
  */
+/* WARN ------------------------------------------------------------------*/
+/* 1. white and dark material has ~4 units difference of reflection. 
+ * 
+ */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f4xx_hal.h"
@@ -60,6 +64,7 @@ UART_HandleTypeDef huart3;
 //bool calibrating = true;
 uint8_t str[5], Dtimes; //"AT\r\n";
 __IO uint32_t ADC_BUF[8];
+__IO uint8_t chIndex = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -77,22 +82,14 @@ static void MX_ADC1_Init(void);
 /* USER CODE BEGIN 0 */
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-  /*
-  if (hadc->Instance == ADC1)
-  {
-		str[0] = (uint8_t) (ADC_BUF[0] / 100);
-  }
-  */
-
-  
-	
+  if (hadc->Instance == ADC1 && chIndex == 0)
+    ADC_BUF[0] = HAL_ADC_GetValue(hadc);
+  else if (hadc->Instance == ADC1 && chIndex == 1)
+    ADC_BUF[1] = HAL_ADC_GetValue(hadc);
+  chIndex++;
+  if (chIndex == 8)
+    chIndex = 0;
 }
-void HAL_SYSTICK_Callback(void)
-{
-  /* TODO: test if this tick can be replaced with uwtick */
-
-}
-
 /* USER CODE END 0 */
 
 /**
@@ -124,12 +121,12 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_DMA_Init();
+  //MX_DMA_Init();
   MX_USART3_UART_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
-	HAL_ADC_Start_DMA(&hadc1, ADC_BUF, 8);
-  //HAL_ADC_Start_IT(&hadc1);
+	//HAL_ADC_Start_DMA(&hadc1, ADC_BUF, 8);
+  HAL_ADC_Start_IT(&hadc1);
 	__HAL_UART_ENABLE_IT(&huart3, UART_IT_RXNE);
   /* USER CODE END 2 */
   
@@ -216,7 +213,7 @@ static void MX_ADC1_Init(void)
     */
   hadc1.Instance = ADC1;
   hadc1.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
-  hadc1.Init.Resolution = ADC_RESOLUTION_10B;
+  hadc1.Init.Resolution = ADC_RESOLUTION_8B;
   hadc1.Init.ScanConvMode = ENABLE;
   hadc1.Init.ContinuousConvMode = ENABLE;
   hadc1.Init.DiscontinuousConvMode = DISABLE;
@@ -224,8 +221,8 @@ static void MX_ADC1_Init(void)
   hadc1.Init.ExternalTrigConv = ADC_SOFTWARE_START;
   hadc1.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc1.Init.NbrOfConversion = 8;
-  hadc1.Init.DMAContinuousRequests = ENABLE;
-  hadc1.Init.EOCSelection = ADC_EOC_SEQ_CONV;//DISABLE;//ADC_EOC_SINGLE_CONV;
+  hadc1.Init.DMAContinuousRequests = DISABLE;
+  hadc1.Init.EOCSelection = ADC_EOC_SINGLE_CONV;//DISABLE;//ADC_EOC_SINGLE_CONV;
   if (HAL_ADC_Init(&hadc1) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
