@@ -1,9 +1,8 @@
 /* Question: why UART's error flag(overrun, parity) is set every time */
 
 /* WARN: 
-1. form app should start first, then the training then can continue.
-2. 
-3. !! first byte in encode data is maze.State now.
+1. form app should start first, then the training then can continue. 
+2. !! first byte in encode data is maze.State now.
 */
 
 /*
