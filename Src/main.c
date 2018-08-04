@@ -37,11 +37,11 @@
   */
 
 /* TODO ------------------------------------------------------------------*/
-/* 1. In HAL_SYSTICK_Callback(). 
+/* 1. 
  * 
  */
 /* WARN ------------------------------------------------------------------*/
-/* 1. white and dark material has ~4 units difference of reflection. 
+/* 1. white and dark object has ~4 units difference of reflection. 
  * 
  */
 /* Includes ------------------------------------------------------------------*/
@@ -52,6 +52,7 @@
 
 /* USER CODE BEGIN Includes */
 #include "maze.h"
+#include "esp8266.h"
 /* USER CODE END Includes */
 /* Extern variables -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -62,15 +63,14 @@ UART_HandleTypeDef huart3;
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 //bool calibrating = true;
-uint8_t str[5], Dtimes; //"AT\r\n";
 __IO uint32_t ADC_BUF[8];
 __IO uint8_t chIndex = 0;
+__IO UART UART_esp8266 = {STANDBY, &huart3, INIT, 0, 0, NO};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_DMA_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_ADC1_Init(void);
 
@@ -86,6 +86,18 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
     ADC_BUF[0] = HAL_ADC_GetValue(hadc);
   else if (hadc->Instance == ADC1 && chIndex == 1)
     ADC_BUF[1] = HAL_ADC_GetValue(hadc);
+  else if (hadc->Instance == ADC1 && chIndex == 2)
+    ADC_BUF[2] = HAL_ADC_GetValue(hadc);
+  else if (hadc->Instance == ADC1 && chIndex == 3)
+    ADC_BUF[3] = HAL_ADC_GetValue(hadc);
+  else if (hadc->Instance == ADC1 && chIndex == 4)
+    ADC_BUF[4] = HAL_ADC_GetValue(hadc);
+  else if (hadc->Instance == ADC1 && chIndex == 5)
+    ADC_BUF[5] = HAL_ADC_GetValue(hadc);
+  else if (hadc->Instance == ADC1 && chIndex == 6)
+    ADC_BUF[6] = HAL_ADC_GetValue(hadc);
+  else if (hadc->Instance == ADC1 && chIndex == 7)
+    ADC_BUF[7] = HAL_ADC_GetValue(hadc);
   chIndex++;
   if (chIndex == 8)
     chIndex = 0;
@@ -117,29 +129,20 @@ int main(void)
 
   /* USER CODE BEGIN SysInit */
 
-  /* USER CODE END SysInit */
+  /* USER CODE END SysInit *//*  */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  //MX_DMA_Init();
   MX_USART3_UART_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
-	//HAL_ADC_Start_DMA(&hadc1, ADC_BUF, 8);
   HAL_ADC_Start_IT(&hadc1);
-	__HAL_UART_ENABLE_IT(&huart3, UART_IT_RXNE);
+	Maze_Init();
   /* USER CODE END 2 */
-  
-  /* for debug, and IR maybe used this to stabilize its output */ //HAL_Delay(100); /* this delay should only have 50ms since the SysTick is set to half of usual */
-  //for (asLoop = 0; asLoop < 8; asLoop++)
-  //mazeArm[asLoop].Dist = ADC_BUF[asLoop];
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-  //endTime = HAL_GetTick();
-  //startTime = HAL_GetTick();
   while (1)
   {
     /* USER CODE END WHILE */ 
+    wifi_process();
     Maze_Rat_Detect();
 		/* USER CODE BEGIN 3 */		
   }
@@ -230,7 +233,7 @@ static void MX_ADC1_Init(void)
 
     /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
     */
-  sConfig.Channel = ADC_CHANNEL_1;
+  sConfig.Channel = ADC_CHANNEL_14;
   sConfig.Rank = 1;
   sConfig.SamplingTime = ADC_SAMPLETIME_144CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
@@ -240,7 +243,7 @@ static void MX_ADC1_Init(void)
 
     /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
     */
-  sConfig.Channel = ADC_CHANNEL_2;
+  sConfig.Channel = ADC_CHANNEL_13;
   sConfig.Rank = 2;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
@@ -249,7 +252,7 @@ static void MX_ADC1_Init(void)
 
     /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
     */
-  sConfig.Channel = ADC_CHANNEL_3;
+  sConfig.Channel = ADC_CHANNEL_2;
   sConfig.Rank = 3;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
@@ -258,7 +261,7 @@ static void MX_ADC1_Init(void)
 
     /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
     */
-  sConfig.Channel = ADC_CHANNEL_4;
+  sConfig.Channel = ADC_CHANNEL_1;
   sConfig.Rank = 4;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
@@ -267,7 +270,7 @@ static void MX_ADC1_Init(void)
 
     /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
     */
-  sConfig.Channel = ADC_CHANNEL_5;
+  sConfig.Channel = ADC_CHANNEL_4;
   sConfig.Rank = 5;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
@@ -276,7 +279,7 @@ static void MX_ADC1_Init(void)
 
     /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
     */
-  sConfig.Channel = ADC_CHANNEL_6;
+  sConfig.Channel = ADC_CHANNEL_9;
   sConfig.Rank = 6;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
@@ -285,7 +288,7 @@ static void MX_ADC1_Init(void)
 
     /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
     */
-  sConfig.Channel = ADC_CHANNEL_7;
+  sConfig.Channel = ADC_CHANNEL_15;
   sConfig.Rank = 7;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
@@ -294,7 +297,7 @@ static void MX_ADC1_Init(void)
 
     /**Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time. 
     */
-  sConfig.Channel = ADC_CHANNEL_8;
+  sConfig.Channel = ADC_CHANNEL_3;
   sConfig.Rank = 8;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
   {
@@ -308,7 +311,7 @@ static void MX_USART3_UART_Init(void)
 {
 
   huart3.Instance = USART3;
-  huart3.Init.BaudRate = 9600;
+  huart3.Init.BaudRate = 115200;
   huart3.Init.WordLength = UART_WORDLENGTH_8B;
   huart3.Init.StopBits = UART_STOPBITS_1;
   huart3.Init.Parity = UART_PARITY_NONE;
@@ -319,21 +322,6 @@ static void MX_USART3_UART_Init(void)
   {
     _Error_Handler(__FILE__, __LINE__);
   }
-
-}
-
-/** 
-  * Enable DMA controller clock
-  */
-static void MX_DMA_Init(void) 
-{
-  /* DMA controller clock enable */
-  __HAL_RCC_DMA2_CLK_ENABLE();
-
-  /* DMA interrupt init */
-  /* DMA2_Stream0_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
 
 }
 
@@ -353,7 +341,9 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOE_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOD, GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15, GPIO_PIN_RESET);
@@ -363,6 +353,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PE4 */
+  GPIO_InitStruct.Pin = GPIO_PIN_4;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);  
 
   /*Configure GPIO pins : PD12 PD13 PD14 PD15 */
   GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_13|GPIO_PIN_14|GPIO_PIN_15;
