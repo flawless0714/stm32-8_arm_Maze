@@ -14,6 +14,8 @@ TODO:
 6. !!receive during training should implement in IT mode since blocking mode will interfere Maze measurement
 7. each state sohuld have longest live time, or we should consider as watchdog timeout.
 */
+
+
 #include "esp8266.h"
 #include "maze.h"
 #include <string.h>
