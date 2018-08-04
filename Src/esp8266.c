@@ -3,7 +3,8 @@
 1. form app should start first, then the training then can continue.
 2. 
 3. !! first byte in encode data is maze.State now.
- */
+*/
+
 /*
 TODO: 
 1. !!! encode and waitForConnection function may have infinite loop, hence a watchdog(use timestamp) may needed. (CAN CHECK IT WITH INTERR   UPT, LIKE WDT, IF VALUE GREATER THAN THRESHOLD, SET UART_STATE TO RECV_DONE)
