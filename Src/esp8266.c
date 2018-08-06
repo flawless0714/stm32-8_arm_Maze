@@ -1,22 +1,19 @@
 /* Question: why UART's error flag(overrun, parity) is set every time */
-
 /* WARN: 
-1. form app should start first, then the training then can continue. 
-2. !! first byte in encode data is maze.State now.
-*/
-
+1. form app should start first, then the training then can continue.
+2. 
+3. !! first byte in encode data is maze.State now.
+ */
 /*
 TODO: 
-1. !!! encode and waitForConnection function may have infinite loop, hence a watchdog(use timestamp) may needed. (CAN CHECK IT WITH INTERR   UPT, LIKE WDT, IF VALUE GREATER THAN THRESHOLD, SET UART_STATE TO RECV_DONE)
+1. !!! encode and waitForConnection function may have infinite loop, hence a watchdog(use timestamp) may needed. (CAN CHECK IT WITH INTERRUPT, LIKE WDT, IF VALUE GREATER THAN THRESHOLD, SET UART_STATE TO RECV_DONE)
 2. a total error count should implement since sometimes a RST is enough to make the module back to normal.
-3. X but should in IT) each send should expect an ACK during training.
+3. (X but should in IT) each send should expect an ACK during training.
 4. (X) each send should clear maze.isDataChange.
 5. we should implement a function to prevent esp8266's halt problem, like AT to know that if it's good.
 6. !!receive during training should implement in IT mode since blocking mode will interfere Maze measurement
 7. each state sohuld have longest live time, or we should consider as watchdog timeout.
 */
-
-
 #include "esp8266.h"
 #include "maze.h"
 #include <string.h>
@@ -359,8 +356,13 @@ StatusTypeDef wifi_parseFoodArm(void)
 void wifi_startButtonWait(void)
 {
     if (!HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_4))
+    {
         UART_esp8266.wifiState = RUNNING_TRAINING;
-
+        
+        maze.State = RAT_NOT_ENTERED;
+        maze.isDataChange = YES;
+        
+    }        
     return;
 }
 void wifi_process(void)
