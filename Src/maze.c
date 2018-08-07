@@ -437,7 +437,7 @@ void Maze_Rat_Detect(void)
         {
           case 0:
           {
-            if ((ADC_BUF[i] > 34) && (ADC_BUF[i] < 43))
+            if ((ADC_BUF[i] > 31) && (ADC_BUF[i] < 40))
               maze.Arm[i].Variability.delta++;
             if (maze.Arm[i].Variability.delta >= 47000)
             {
@@ -449,7 +449,7 @@ void Maze_Rat_Detect(void)
           }
           case 1:
           {
-            if ((ADC_BUF[i] > 32) && (ADC_BUF[i] < 38))
+            if ((ADC_BUF[i] > 29) && (ADC_BUF[i] < 35))
               maze.Arm[i].Variability.delta++;
             if (maze.Arm[i].Variability.delta >= 45500)
             {
@@ -461,7 +461,7 @@ void Maze_Rat_Detect(void)
           }
           case 2:
           {
-            if ((ADC_BUF[i] > 35) && (ADC_BUF[i] < 43))
+            if ((ADC_BUF[i] > 32) && (ADC_BUF[i] < 43))
               maze.Arm[i].Variability.delta++;
             if (maze.Arm[i].Variability.delta >= 46000)
             {
@@ -473,7 +473,7 @@ void Maze_Rat_Detect(void)
           }
           case 3:
           {
-            if ((ADC_BUF[i] > 28) && (ADC_BUF[i] < 34))
+            if ((ADC_BUF[i] > 28) && (ADC_BUF[i] < 35))
               maze.Arm[i].Variability.delta++;
             if (maze.Arm[i].Variability.delta >= 47000)
             {
