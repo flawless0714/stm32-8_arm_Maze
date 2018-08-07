@@ -181,7 +181,7 @@ void wifi_establishConnetion(void)
     comes to remote port, since the computer is in LAN, hence we can use the specific port, or it may be error.anyway this 
     reduce the flexibility in some case. 
     */
-    wifi_sendCommand(AT_CIPSTART, "0,\"UDP\",\"192.168.4.2\",60138,3232,2"); /* WARN: last arg may cause error or not, just take a note */
+    wifi_sendCommand(AT_CIPSTART, "0,\"UDP\",\"192.168.4.2\",62222,3232,2"); /* WARN: last arg may cause error or not, just take a note */
     while (UART_esp8266.state != SEND_DONE) {}
     if (HAL_UART_Receive(UART_esp8266.huart, (uint8_t*) &esp8266_recvBuffer, DEVICE_CONN_ESTABLISH_SIZE, 1000) == HAL_TIMEOUT)
     {
