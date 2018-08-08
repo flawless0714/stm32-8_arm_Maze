@@ -14,6 +14,7 @@
 void Maze_Struct_Init(void);
 void Maze_Rat_Detect(void);
 void Maze_Init(void);
+void Maze_Reset_Each_Arm_Delta(void);
 /** 
   * @brief State of maze.  
   */
@@ -70,7 +71,8 @@ typedef struct
   uint8_t LastEnteredArm;
   uint8_t EnterSeq[50]; /* enter counts should less than 50 times */
   uint8_t* EnterSeqPtr; /* maximux index is 49 , we should guarantee that enterSeq wont exceed 50 */
-  Maze_isData_Change isDataChange; /*  */
+  Maze_isData_Change isDataChange; /* if data should update through wifi */
+  uint32_t currentTick; /* cd between state change */
 }Maze;
 
 

@@ -40,6 +40,7 @@ void Maze_Init(void)
   }
   maze.isDataChange = NO;
   maze.EnterSeqPtr = (uint8_t*) &maze.EnterSeq;
+  maze.currentTick = 0;
 }
 
 void Maze_Rat_Detect(void)
@@ -76,7 +77,7 @@ void Maze_Rat_Detect(void)
 						{
 						  //HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);
               maze.isDataChange = YES;
-              maze.Arm[i].Variability.delta = 0;
+              Maze_Reset_Each_Arm_Delta();
 							maze.State = RAT_NOT_ENTERED;
 						}
             break;
@@ -89,7 +90,7 @@ void Maze_Rat_Detect(void)
             {
 						  //HAL_GPIO_WritePin(GPIOD, GPIO_PIN_14, GPIO_PIN_SET);
               maze.isDataChange = YES;
-              maze.Arm[i].Variability.delta = 0;
+              Maze_Reset_Each_Arm_Delta();
 							maze.State = RAT_NOT_ENTERED;
 						}
             break;
@@ -101,7 +102,7 @@ void Maze_Rat_Detect(void)
             if (maze.Arm[i].Variability.delta >= 55000)
             {
               maze.isDataChange = YES;
-              maze.Arm[i].Variability.delta = 0;
+              Maze_Reset_Each_Arm_Delta();
               maze.State = RAT_NOT_ENTERED;
             }              
             break;
@@ -113,7 +114,7 @@ void Maze_Rat_Detect(void)
             if (maze.Arm[i].Variability.delta >= 87500)
             {
               maze.isDataChange = YES;
-              maze.Arm[i].Variability.delta = 0;
+              Maze_Reset_Each_Arm_Delta();
               maze.State = RAT_NOT_ENTERED;
             }   
             break;
@@ -127,7 +128,7 @@ void Maze_Rat_Detect(void)
             if (maze.Arm[i].Variability.delta >= 55000)
             {
               maze.isDataChange = YES;
-              maze.Arm[i].Variability.delta = 0;
+              Maze_Reset_Each_Arm_Delta();
               maze.State = RAT_NOT_ENTERED;
             }   
             break;
@@ -139,7 +140,7 @@ void Maze_Rat_Detect(void)
             if (maze.Arm[i].Variability.delta >= 55000)
             {
               maze.isDataChange = YES;
-              maze.Arm[i].Variability.delta = 0;
+              Maze_Reset_Each_Arm_Delta();
               maze.State = RAT_NOT_ENTERED;
             }   
             break;
@@ -151,7 +152,7 @@ void Maze_Rat_Detect(void)
             if (maze.Arm[i].Variability.delta >= 55000)
             {
               maze.isDataChange = YES;
-              maze.Arm[i].Variability.delta = 0;
+              Maze_Reset_Each_Arm_Delta();
               maze.State = RAT_NOT_ENTERED;
             }   
             break;
@@ -163,7 +164,7 @@ void Maze_Rat_Detect(void)
             if (maze.Arm[i].Variability.delta >= 55000)
             {
               maze.isDataChange = YES;
-              maze.Arm[i].Variability.delta = 0;
+              Maze_Reset_Each_Arm_Delta();
               maze.State = RAT_NOT_ENTERED;
             }   
             break;
@@ -174,19 +175,23 @@ void Maze_Rat_Detect(void)
     }
     case RAT_NOT_ENTERED: /* the state is being changed once position Dc is triggered */
     {
+      if ((maze.currentTick + 1450) >= HAL_GetTick()) /* cd between state change */
+      {
+        break;
+      }
        for (i = 0; i < 8; i++)
       {
         switch (i) /* use another switch case to dealing with different characteristic of IRs, TODO: the value can be macroed */
         {
           case 0:
           {
-            if (ADC_BUF[i] > 45 && ADC_BUF[i] < 58)
+            if (ADC_BUF[i] > 44 && ADC_BUF[i] < 58)
               maze.Arm[i].Variability.delta++;  
             if (maze.Arm[i].Variability.delta >= 46000)
             {
               if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))  /* prevent access of address out of array */
                 *maze.EnterSeqPtr++ = (i + 1); /* arm 1~8 */
-              maze.Arm[i].Variability.delta = 0;
+              Maze_Reset_Each_Arm_Delta();
               maze.State = RAT_ENTERED;
               if (i == maze.LastEnteredArm) /* isLastArmEntered ? */
               {
@@ -217,7 +222,7 @@ void Maze_Rat_Detect(void)
             {
               if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))  /* prevent access of address out of array */
                 *maze.EnterSeqPtr++ = (i + 1); /* arm 1~8 */
-              maze.Arm[i].Variability.delta = 0;
+              Maze_Reset_Each_Arm_Delta();
               maze.State = RAT_ENTERED;
               if (i == maze.LastEnteredArm) /* isLastArmEntered ? */
               {
@@ -247,7 +252,7 @@ void Maze_Rat_Detect(void)
             {
               if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))  /* prevent access of address out of array */
                 *maze.EnterSeqPtr++ = (i + 1); /* arm 1~8 */
-              maze.Arm[i].Variability.delta = 0;
+              Maze_Reset_Each_Arm_Delta();
               maze.State = RAT_ENTERED;
               if (i == maze.LastEnteredArm) /* isLastArmEntered ? */
               {
@@ -271,13 +276,13 @@ void Maze_Rat_Detect(void)
           }
           case 3:
           {
-            if ((ADC_BUF[i] > 43) && (ADC_BUF[i] < 52))
+            if ((ADC_BUF[i] > 43) && (ADC_BUF[i] < 56))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 50500)
+            if (maze.Arm[i].Variability.delta >= 48500)
             {
               if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))  /* prevent access of address out of array */
                 *maze.EnterSeqPtr++ = (i + 1); /* arm 1~8 */
-              maze.Arm[i].Variability.delta = 0;
+              Maze_Reset_Each_Arm_Delta();
               maze.State = RAT_ENTERED;
               if (i == maze.LastEnteredArm) /* isLastArmEntered ? */
               {
@@ -301,13 +306,13 @@ void Maze_Rat_Detect(void)
           }
           case 4:
           {
-            if ((ADC_BUF[i] > 45) && (ADC_BUF[i] < 58))
+            if ((ADC_BUF[i] > 46) && (ADC_BUF[i] < 58))
               maze.Arm[i].Variability.delta++;
             if (maze.Arm[i].Variability.delta >= 46000)
             {
               if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))  /* prevent access of address out of array */
                 *maze.EnterSeqPtr++ = (i + 1); /* arm 1~8 */
-              maze.Arm[i].Variability.delta = 0;
+              Maze_Reset_Each_Arm_Delta();
               maze.State = RAT_ENTERED;
               if (i == maze.LastEnteredArm) /* isLastArmEntered ? */
               {
@@ -331,13 +336,13 @@ void Maze_Rat_Detect(void)
           }
           case 5:
           {
-            if ((ADC_BUF[i] > 47) && (ADC_BUF[i] < 60))
+            if ((ADC_BUF[i] > 45) && (ADC_BUF[i] < 60))
               maze.Arm[i].Variability.delta++;
             if (maze.Arm[i].Variability.delta >= 46000)
             {
               if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))   /* prevent access of address out of array */
                 *maze.EnterSeqPtr++ = (i + 1);  /* arm 1~8 */
-              maze.Arm[i].Variability.delta = 0;  /* reset to prevent duplicated determination */
+              Maze_Reset_Each_Arm_Delta();  /* reset to prevent duplicated determination */
               maze.State = RAT_ENTERED;
               if (i == maze.LastEnteredArm) /* isLastArmEntered ? */
               {
@@ -367,7 +372,7 @@ void Maze_Rat_Detect(void)
             {
               if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))  /* prevent access of address out of array */
                 *maze.EnterSeqPtr++ = (i + 1); /* arm 1~8 */
-              maze.Arm[i].Variability.delta = 0;
+              Maze_Reset_Each_Arm_Delta();
               maze.State = RAT_ENTERED;
               if (i == maze.LastEnteredArm) /* isLastArmEntered ? */
               {
@@ -391,13 +396,13 @@ void Maze_Rat_Detect(void)
           }
           case 7:
           {
-            if ((ADC_BUF[i] > 52) && (ADC_BUF[i] < 65))
+            if ((ADC_BUF[i] > 55) && (ADC_BUF[i] < 66))
               maze.Arm[i].Variability.delta++;
             if (maze.Arm[i].Variability.delta >= 46000)
             {
               if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))  /* prevent access of address out of array */
                 *maze.EnterSeqPtr++ = (i + 1); /* arm 1~8 */
-              maze.Arm[i].Variability.delta = 0;
+              Maze_Reset_Each_Arm_Delta();
               maze.State = RAT_ENTERED;
               if (i == maze.LastEnteredArm) /* isLastArmEntered ? */
               {
@@ -425,35 +430,38 @@ void Maze_Rat_Detect(void)
     }
     case RAT_ENTERED: /* RAT_NOT_ENTERED is triggered by Da */
     {
+      if ((maze.currentTick + 950) >= HAL_GetTick()) /* cd between state change */
+      {
+				i = maze.LastEnteredArm;
+        break;
+      }
       if (maze.FoodCount >= 4)
       {
         maze.State = TRAINING_END;
         maze.isDataChange = YES;
         return;
       }
-      for (i = 0; i < 8; i++)
-      {
-        switch (i) /* use another switch case to dealing with different characteristic of IRs, TODO: the value can be macroed */
+        switch (maze.LastEnteredArm) /* use another switch case to dealing with different characteristic of IRs, TODO: the value can be macroed */
         {
           case 0:
           {
             if ((ADC_BUF[i] > 31) && (ADC_BUF[i] < 40))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 47000)
+            if (maze.Arm[i].Variability.delta >= 45000)
             {
-              maze.Arm[i].Variability.delta = 0;
+              Maze_Reset_Each_Arm_Delta();
               maze.isDataChange = YES;
-              maze.State = RAT_NOT_ENTERED;
+              maze.State = RAT_NOT_ENTERED;              
             }              
             break;
           }
           case 1:
           {
-            if ((ADC_BUF[i] > 29) && (ADC_BUF[i] < 35))
+            if ((ADC_BUF[i] > 32) && (ADC_BUF[i] < 38))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 45500)
+            if (maze.Arm[i].Variability.delta >= 43500)
             {
-              maze.Arm[i].Variability.delta = 0;
+              Maze_Reset_Each_Arm_Delta();
               maze.isDataChange = YES;
               maze.State = RAT_NOT_ENTERED;
             }              
@@ -461,11 +469,11 @@ void Maze_Rat_Detect(void)
           }
           case 2:
           {
-            if ((ADC_BUF[i] > 32) && (ADC_BUF[i] < 43))
+            if ((ADC_BUF[i] > 35) && (ADC_BUF[i] < 43))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 46000)
+            if (maze.Arm[i].Variability.delta >= 44000)
             {
-              maze.Arm[i].Variability.delta = 0;
+              Maze_Reset_Each_Arm_Delta();
               maze.isDataChange = YES;
               maze.State = RAT_NOT_ENTERED;
             }              
@@ -473,11 +481,11 @@ void Maze_Rat_Detect(void)
           }
           case 3:
           {
-            if ((ADC_BUF[i] > 28) && (ADC_BUF[i] < 35))
+            if ((ADC_BUF[i] > 28) && (ADC_BUF[i] < 36))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 47000)
+            if (maze.Arm[i].Variability.delta >= 45000)
             {
-              maze.Arm[i].Variability.delta = 0;
+              Maze_Reset_Each_Arm_Delta();
               maze.isDataChange = YES;
               maze.State = RAT_NOT_ENTERED;
             }              
@@ -487,9 +495,9 @@ void Maze_Rat_Detect(void)
           {
             if ((ADC_BUF[i] > 27) && (ADC_BUF[i] < 37))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 47000)
+            if (maze.Arm[i].Variability.delta >= 43000)
             {
-              maze.Arm[i].Variability.delta = 0;
+              Maze_Reset_Each_Arm_Delta();
               maze.isDataChange = YES;
               maze.State = RAT_NOT_ENTERED;
             }              
@@ -499,9 +507,9 @@ void Maze_Rat_Detect(void)
           {
             if ((ADC_BUF[i] > 34) && (ADC_BUF[i] < 42))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 46000)
+            if (maze.Arm[i].Variability.delta >= 44000)
             {
-              maze.Arm[i].Variability.delta = 0;
+              Maze_Reset_Each_Arm_Delta();
               maze.isDataChange = YES;
               maze.State = RAT_NOT_ENTERED;
             }              
@@ -511,9 +519,9 @@ void Maze_Rat_Detect(void)
           {
             if ((ADC_BUF[i] > 28) && (ADC_BUF[i] < 34))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 45500)
+            if (maze.Arm[i].Variability.delta >= 43500)
             {
-              maze.Arm[i].Variability.delta = 0;
+              Maze_Reset_Each_Arm_Delta();
               maze.isDataChange = YES;
               maze.State = RAT_NOT_ENTERED;
             }              
@@ -523,16 +531,16 @@ void Maze_Rat_Detect(void)
           {
             if ((ADC_BUF[i] > 38) && (ADC_BUF[i] < 46))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 46000)
+            if (maze.Arm[i].Variability.delta >= 44000)
             {
-              maze.Arm[i].Variability.delta = 0;
+              Maze_Reset_Each_Arm_Delta();
               maze.isDataChange = YES;
               maze.State = RAT_NOT_ENTERED;
             }              
             break;
           }
         }
-      }
+      
       return;
     }
     case TRAINING_END:
@@ -541,6 +549,19 @@ void Maze_Rat_Detect(void)
     }
   }
     //HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);//maze.Arm[0].Variability.startTick = uwTick;
+}
+/*  @brief reset delta to get a cleared val at next state and update ticktime
+ *
+ *
+ */
+void Maze_Reset_Each_Arm_Delta(void)
+{
+  uint8_t i;
+  for (i = 0; i < 8; i++)
+  {
+    maze.Arm[i].Variability.delta = 0;
+  }
+  maze.currentTick = HAL_GetTick();
 }
 
 /************************ flawless0714 *****END OF FILE****/
