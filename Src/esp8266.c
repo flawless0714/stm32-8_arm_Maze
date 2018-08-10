@@ -323,7 +323,7 @@ void wifi_trainingDataEncode(void)
         *bufferPtr++ = maze.Arm[index].ShortTerm_err;
     }
     *bufferPtr++ = maze.FoodCount;
-    while (*seqPtr != NULL)
+    while (*seqPtr != NULL) /*TODO: if deference of (buffer address) + 1 not equal to 0, then a violation access is commited */
     {
         *bufferPtr++ = *seqPtr; /* TODO: i have no time to guarantee that how ++ is implemented here, hence I move it to next line */
         seqPtr++;
