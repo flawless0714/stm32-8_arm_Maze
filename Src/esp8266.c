@@ -87,7 +87,7 @@ void wifi_sendCommand(uint8_t* command, uint8_t* specific)
 void wifi_recvCheck(void)
 {
     uint8_t index = 0;
-    for (index = 0; index < RECV_BUFFER_SIZE - 1; index++) /* -1 here is to prevent the access of the address outside the buffer, and "OK" don't appears near the end of the buffer typically */
+    for (index = 0; index < RECV_BUFFER_SIZE - 1; index++) /* -1 here is to prevent the access of the address outside the buffer */
     {
         if (esp8266_recvBuffer[index] == 'O' && esp8266_recvBuffer[index + 1] == 'K')
         {
@@ -123,7 +123,7 @@ StatusTypeDef wifi_waitForResponse(void)
 
 void wifi_Init(void)
 {
-    wifi_sendCommand(AT_RST, NULL);
+    wifi_sendCommand(AT_RST, NULL);  /* we should check the response of this command since sometimes the module seems didn't reset and cause the fail of close of last connection even command CIPCLOSE is send */
     HAL_Delay(2000);
     wifi_sendCommand(AT_NO_ECHO, NULL);
     
@@ -147,7 +147,8 @@ void wifi_waitForConnect(void)
     uint8_t index;
     wifi_sendCommand(AT_CWLIF, NULL); /* send this command to aquire connected device's information */
     while (UART_esp8266.state != SEND_DONE) {}
-    if (HAL_UART_Receive(UART_esp8266.huart, (uint8_t*) &esp8266_recvBuffer, DEVICE_CONNECTED_SIZE, 1000) == HAL_TIMEOUT)
+    /* TODO: maybe we can receive less data regardless of if any deveice is connected since we only capture '1'92's '1' to validate that a device is connected */
+    if (HAL_UART_Receive(UART_esp8266.huart, (uint8_t*) &esp8266_recvBuffer, DEVICE_CONNECTED_SIZE, 1000) == HAL_TIMEOUT) 
     {
         memset(&esp8266_recvBuffer, 0, RECV_BUFFER_SIZE);
         UART_esp8266.state = STANDBY;   

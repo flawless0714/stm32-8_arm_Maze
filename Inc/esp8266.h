@@ -30,7 +30,7 @@
 #define AT_RST      "AT+RST\0"
 #define AT          "AT\0"
 #define AT_OK       "OK\0"
-#define AT_CIPMUX   "AT+CIPMUX\0" /* should set to 1 since we need multiple connection, note that single connection maybe also work */
+#define AT_CIPMUX   "AT+CIPMUX\0" /*  note that single connection maybe also work */
 #define AT_NO_ECHO  "ATE0\0"
 #define AT_CWMODE   "AT+CWMODE\0"
 #define AT_CWSAP    "AT+CWSAP\0"
