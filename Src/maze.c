@@ -4,6 +4,7 @@
 
 #include "maze.h"
 #include "esp8266.h"
+#include "uart_maze.h"
 
 extern ADC_HandleTypeDef hadc1;
 extern __IO uint32_t ADC_BUF[8];
@@ -11,7 +12,8 @@ extern uint8_t str[5];
 __IO uint32_t Maze_LastEnterTick;
 __IO Maze maze = {{0},WAIT_FOR_RAT };
 __IO uint32_t debugMostValue = 0;
-__IO extern  UART UART_esp8266;
+__IO extern UART UART_esp8266;
+__IO extern uartTrans mazeTrans;
                  
 void Maze_Init(void)
 {
@@ -45,7 +47,7 @@ void Maze_Init(void)
 
 void Maze_Rat_Detect(void)
 {// TODO bring this back on release version
-  if (UART_esp8266.wifiState != RUNNING_TRAINING && UART_esp8266.wifiState != RUNNING_TRAINING_DONE) /* training have not ready to start */
+  if (mazeTrans.Tstate == WAIT_KNOCK_DOOR) /* training have not ready to start */
   {
     return;
   }
