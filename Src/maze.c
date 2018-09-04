@@ -10,7 +10,7 @@ extern ADC_HandleTypeDef hadc1;
 extern __IO uint32_t ADC_BUF[8];
 extern uint8_t str[5];
 __IO uint32_t Maze_LastEnterTick;
-__IO Maze maze = {{0},WAIT_FOR_RAT };
+__IO Maze maze;
 __IO uint32_t debugMostValue = 0;
 __IO extern UART UART_esp8266;
 __IO extern uartTrans mazeTrans;
@@ -28,6 +28,7 @@ void Maze_Init(void)
     maze.Arm[i].Variability.endTick = 0;
     maze.Arm[i].Variability.delta = 0;
   }
+  maze.State = WAIT_FOR_RAT;
   /*
   for (i = 0; i < 8; i += 2)
   {
@@ -189,7 +190,7 @@ void Maze_Rat_Detect(void)
           {
             if (ADC_BUF[i] > 44 && ADC_BUF[i] < 100)
               maze.Arm[i].Variability.delta++;  
-            if (maze.Arm[i].Variability.delta >= 47500)
+            if (maze.Arm[i].Variability.delta >= 48500)
             {
               if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))  /* prevent access of address out of array */
                 *maze.EnterSeqPtr++ = (i + 1); /* arm 1~8 */
@@ -212,7 +213,7 @@ void Maze_Rat_Detect(void)
                 maze.FoodCount++;
                 maze.isDataChange = YES;
               }
-              else if(maze.Arm[i].Food == NO_FOOD && maze.Arm[i].LongTerm_err < 1)
+              else if(maze.Arm[i].Food == NO_FOOD && maze.Arm[i].LongTerm_err == 0)
               {
                 maze.Arm[i].LongTerm_err++;
                 maze.isDataChange = YES;
@@ -224,7 +225,7 @@ void Maze_Rat_Detect(void)
           {
             if (ADC_BUF[1] > 50 && ADC_BUF[1] < 100)
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 47500)
+            if (maze.Arm[i].Variability.delta >= 48500)
             {
               if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))  /* prevent access of address out of array */
                 *maze.EnterSeqPtr++ = (i + 1); /* arm 1~8 */
@@ -246,7 +247,7 @@ void Maze_Rat_Detect(void)
                 maze.FoodCount++;
                 maze.isDataChange = YES;
               }
-              else if(maze.Arm[i].Food == NO_FOOD && maze.Arm[i].LongTerm_err < 1)
+              else if(maze.Arm[i].Food == NO_FOOD && maze.Arm[i].LongTerm_err == 0)
               {
                 maze.Arm[i].LongTerm_err++;
                 maze.isDataChange = YES;
@@ -258,7 +259,7 @@ void Maze_Rat_Detect(void)
           {
             if ((ADC_BUF[i] > 52) && (ADC_BUF[i] < 98))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 47500)
+            if (maze.Arm[i].Variability.delta >= 48500)
             {
               if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))  /* prevent access of address out of array */
                 *maze.EnterSeqPtr++ = (i + 1); /* arm 1~8 */
@@ -280,7 +281,7 @@ void Maze_Rat_Detect(void)
                 maze.FoodCount++;
                 maze.isDataChange = YES;
               }
-              else if(maze.Arm[i].Food == NO_FOOD && maze.Arm[i].LongTerm_err < 1)
+              else if(maze.Arm[i].Food == NO_FOOD && maze.Arm[i].LongTerm_err == 0)
               {
                 maze.Arm[i].LongTerm_err++;
                 maze.isDataChange = YES;
@@ -292,7 +293,7 @@ void Maze_Rat_Detect(void)
           {
             if ((ADC_BUF[i] > 42) && (ADC_BUF[i] < 83)) /* was 79 0821 15:55 */
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 48750)
+            if (maze.Arm[i].Variability.delta >= 49750)
             {
               if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))  /* prevent access of address out of array */
                 *maze.EnterSeqPtr++ = (i + 1); /* arm 1~8 */
@@ -314,7 +315,7 @@ void Maze_Rat_Detect(void)
                 maze.FoodCount++;
                 maze.isDataChange = YES;
               }
-              else if(maze.Arm[i].Food == NO_FOOD && maze.Arm[i].LongTerm_err < 1)
+              else if(maze.Arm[i].Food == NO_FOOD && maze.Arm[i].LongTerm_err == 0)
               {
                 maze.Arm[i].LongTerm_err++;
                 maze.isDataChange = YES;
@@ -326,7 +327,7 @@ void Maze_Rat_Detect(void)
           {
             if ((ADC_BUF[i] > 50) && (ADC_BUF[i] < 100))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 47500)
+            if (maze.Arm[i].Variability.delta >= 48500)
             {
               if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))  /* prevent access of address out of array */
                 *maze.EnterSeqPtr++ = (i + 1); /* arm 1~8 */
@@ -348,7 +349,7 @@ void Maze_Rat_Detect(void)
                 maze.FoodCount++;
                 maze.isDataChange = YES;
               }
-              else if(maze.Arm[i].Food == NO_FOOD && maze.Arm[i].LongTerm_err < 1)
+              else if(maze.Arm[i].Food == NO_FOOD && maze.Arm[i].LongTerm_err == 0)
               {
                 maze.Arm[i].LongTerm_err++;
                 maze.isDataChange = YES;
@@ -360,7 +361,7 @@ void Maze_Rat_Detect(void)
           {
             if ((ADC_BUF[i] > 47) && (ADC_BUF[i] < 100))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 47500)
+            if (maze.Arm[i].Variability.delta >= 48500)
             {
               if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))   /* prevent access of address out of array */
                 *maze.EnterSeqPtr++ = (i + 1);  /* arm 1~8 */
@@ -382,7 +383,7 @@ void Maze_Rat_Detect(void)
                 maze.FoodCount++;
                 maze.isDataChange = YES;
               }
-              else if(maze.Arm[i].Food == NO_FOOD && maze.Arm[i].LongTerm_err < 1)
+              else if(maze.Arm[i].Food == NO_FOOD && maze.Arm[i].LongTerm_err == 0)
               {
                 maze.Arm[i].LongTerm_err++;
                 maze.isDataChange = YES;
@@ -394,7 +395,7 @@ void Maze_Rat_Detect(void)
           {
             if ((ADC_BUF[i] > 43) && (ADC_BUF[i] < 100))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 47500)
+            if (maze.Arm[i].Variability.delta >= 48500)
             {
               if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))  /* prevent access of address out of array */
                 *maze.EnterSeqPtr++ = (i + 1); /* arm 1~8 */
@@ -416,7 +417,7 @@ void Maze_Rat_Detect(void)
                 maze.FoodCount++;
                 maze.isDataChange = YES;
               }
-              else if(maze.Arm[i].Food == NO_FOOD && maze.Arm[i].LongTerm_err < 1)
+              else if(maze.Arm[i].Food == NO_FOOD && maze.Arm[i].LongTerm_err == 0)
               {
                 maze.Arm[i].LongTerm_err++;
                 maze.isDataChange = YES;
@@ -428,7 +429,7 @@ void Maze_Rat_Detect(void)
           {
             if ((ADC_BUF[i] > 57) && (ADC_BUF[i] < 90))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 47500)
+            if (maze.Arm[i].Variability.delta >= 48500)
             {
               if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))  /* prevent access of address out of array */
                 *maze.EnterSeqPtr++ = (i + 1); /* arm 1~8 */
@@ -450,7 +451,7 @@ void Maze_Rat_Detect(void)
                 maze.FoodCount++;
                 maze.isDataChange = YES;
               }
-              else if(maze.Arm[i].Food == NO_FOOD && maze.Arm[i].LongTerm_err < 1)
+              else if(maze.Arm[i].Food == NO_FOOD && maze.Arm[i].LongTerm_err == 0)
               {
                 maze.Arm[i].LongTerm_err++;
                 maze.isDataChange = YES;
@@ -479,7 +480,7 @@ void Maze_Rat_Detect(void)
         {
           case 0:
           {
-            if ((ADC_BUF[i] > 29) && (ADC_BUF[i] < 38))
+            if ((ADC_BUF[i] > 27) && (ADC_BUF[i] < 36))
               maze.Arm[i].Variability.delta++;
             if (maze.Arm[i].Variability.delta >= 45000)
             {
@@ -491,7 +492,7 @@ void Maze_Rat_Detect(void)
           }
           case 1:
           {
-            if ((ADC_BUF[i] > 32) && (ADC_BUF[i] < 38))
+            if ((ADC_BUF[i] > 30) && (ADC_BUF[i] < 36))
               maze.Arm[i].Variability.delta++;
             if (maze.Arm[i].Variability.delta >= 43500)
             {
@@ -503,7 +504,7 @@ void Maze_Rat_Detect(void)
           }
           case 2:
           {
-            if ((ADC_BUF[i] > 35) && (ADC_BUF[i] < 43))
+            if ((ADC_BUF[i] > 33) && (ADC_BUF[i] < 41))
               maze.Arm[i].Variability.delta++;
             if (maze.Arm[i].Variability.delta >= 44000)
             {
@@ -515,7 +516,7 @@ void Maze_Rat_Detect(void)
           }
           case 3:
           {
-            if ((ADC_BUF[i] > 28) && (ADC_BUF[i] < 36))
+            if ((ADC_BUF[i] > 26) && (ADC_BUF[i] < 34))
               maze.Arm[i].Variability.delta++;
             if (maze.Arm[i].Variability.delta >= 45000)
             {
@@ -527,7 +528,7 @@ void Maze_Rat_Detect(void)
           }
           case 4:
           {
-            if ((ADC_BUF[i] > 23) && (ADC_BUF[i] < 33))
+            if ((ADC_BUF[i] > 21) && (ADC_BUF[i] < 31))
               maze.Arm[i].Variability.delta++;
             if (maze.Arm[i].Variability.delta >= 43000)
             {
@@ -539,7 +540,7 @@ void Maze_Rat_Detect(void)
           }
           case 5:
           {
-            if ((ADC_BUF[i] > 30) && (ADC_BUF[i] < 38))
+            if ((ADC_BUF[i] > 28) && (ADC_BUF[i] < 36))
               maze.Arm[i].Variability.delta++;
             if (maze.Arm[i].Variability.delta >= 44000)
             {
@@ -551,7 +552,7 @@ void Maze_Rat_Detect(void)
           }
           case 6:
           {
-            if ((ADC_BUF[i] > 26) && (ADC_BUF[i] < 32))
+            if ((ADC_BUF[i] > 24) && (ADC_BUF[i] < 30))
               maze.Arm[i].Variability.delta++;
             if (maze.Arm[i].Variability.delta >= 43500)
             {
@@ -563,7 +564,7 @@ void Maze_Rat_Detect(void)
           }
           case 7:
           {
-            if ((ADC_BUF[i] > 36) && (ADC_BUF[i] < 44))
+            if ((ADC_BUF[i] > 34) && (ADC_BUF[i] < 42))
               maze.Arm[i].Variability.delta++;
             if (maze.Arm[i].Variability.delta >= 44000)
             {
