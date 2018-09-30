@@ -16,7 +16,7 @@ TODO:
 */
 #include "esp8266.h"
 #include "maze.h"
-#include <string.h>
+
 
 
 /* Global Variable ---------------*/
@@ -31,30 +31,10 @@ __IO extern  Maze maze;
 /* Function declaration ---------------*/
 void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) /* UART error(parity error, overrun...) callback */
 {
-    UART_esp8266.state = RECV_ERROR;
+    HAL_GPIO_WritePin(GPIOD,GPIO_PIN_15, GPIO_PIN_SET);
 }
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) 
-{
-    UART_esp8266.state = RECV_DONE;
-}
 
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
-{
-    /* whole code existing here now can put into a if which has a state said that this is initialize state */
-    UART_esp8266.state = SEND_DONE;
-    if (UART_esp8266.isDataSendRD != YES)
-	    memset(&esp8266_sendBuffer, 0, SEND_BUFFER_SIZE/* strlen((char*) &esp8266_sendBuffer) */);    /* argument pass to size is intend to improve the performance */
-		
-    //memset(&esp8266_recvBuffer, 0, RECV_BUFFER_SIZE/*strlen((char*) &esp8266_recvBuffer)*/);
-	
-    /*
-		if (debug == 1)
-			HAL_UART_Receive_IT(UART_esp8266.huart, (uint8_t*) &esp8266_recvBuffer, ECHO_TURN_OFF_EDGE);
-		else if (debug == 2)
-			HAL_UART_Receive_IT(UART_esp8266.huart, (uint8_t*) &esp8266_recvBuffer, TYPICAL_RECEIVE_SIZE);
-    */
-}
 
 void wifi_sendCommand(uint8_t* command, uint8_t* specific)
 {
@@ -334,7 +314,7 @@ void wifi_trainingDataEncode(void)
     return;
 }
 
-StatusTypeDef wifi_parseFoodArm(void)
+StatusTypeDef wifi_parseFoodArm(void) /* TODO: change func type to void if return type StatusTypeDef is not needed */
 {
     uint8_t index;
     uint8_t armBuffer;
