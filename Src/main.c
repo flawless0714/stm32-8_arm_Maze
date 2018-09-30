@@ -53,9 +53,11 @@
 /* USER CODE BEGIN Includes */
 #include "maze.h"
 #include "esp8266.h"
+#include "uart_maze.h"
 /* USER CODE END Includes */
 /* Extern variables -----------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+int g_test;
 ADC_HandleTypeDef hadc1;
 DMA_HandleTypeDef hdma_adc1;
 UART_HandleTypeDef huart3;
@@ -138,11 +140,12 @@ int main(void)
   /* USER CODE BEGIN 2 */
   HAL_ADC_Start_IT(&hadc1);
 	Maze_Init();
+  uartTransInit();
   /* USER CODE END 2 */
   while (1)
   {
     /* USER CODE END WHILE */ 
-    wifi_process();
+    uartTransmission();
     Maze_Rat_Detect();
 		/* USER CODE BEGIN 3 */		
   }
