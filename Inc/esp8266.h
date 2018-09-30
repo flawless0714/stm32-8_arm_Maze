@@ -8,6 +8,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx.h"
 #include "maze.h"
+#include <string.h>
 /* Macros ------------------------------------------------------------------*/
 #define SSID "CCC_Lab\0"
 #define PASSWORD "00001111\0"
