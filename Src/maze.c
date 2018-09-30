@@ -6,6 +6,7 @@
 #include "esp8266.h"
 #include "uart_maze.h"
 
+int g_test;
 extern ADC_HandleTypeDef hadc1;
 extern __IO uint32_t ADC_BUF[8];
 extern uint8_t str[5];
@@ -178,7 +179,7 @@ void Maze_Rat_Detect(void)
     }
     case RAT_NOT_ENTERED: /* the state is being changed once position Dc is triggered */
     {
-      if ((maze.currentTick + 1450) >= HAL_GetTick()) /* cd between state change */
+      if ((maze.currentTick + 600) >= HAL_GetTick()) /* cd between state change */
       {
         break;
       }
@@ -190,7 +191,7 @@ void Maze_Rat_Detect(void)
           {
             if (ADC_BUF[i] > 44 && ADC_BUF[i] < 100)
               maze.Arm[i].Variability.delta++;  
-            if (maze.Arm[i].Variability.delta >= 48500)
+            if (maze.Arm[i].Variability.delta >= 49000)
             {
               if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))  /* prevent access of address out of array */
                 *maze.EnterSeqPtr++ = (i + 1); /* arm 1~8 */
@@ -223,7 +224,7 @@ void Maze_Rat_Detect(void)
           }
           case 1:
           {
-            if (ADC_BUF[1] > 50 && ADC_BUF[1] < 100)
+            if (ADC_BUF[1] > 53 && ADC_BUF[1] < 101)
               maze.Arm[i].Variability.delta++;
             if (maze.Arm[i].Variability.delta >= 48500)
             {
@@ -291,7 +292,7 @@ void Maze_Rat_Detect(void)
           }
           case 3:
           {
-            if ((ADC_BUF[i] > 42) && (ADC_BUF[i] < 83)) /* was 79 0821 15:55 */
+            if ((ADC_BUF[i] > 45) && (ADC_BUF[i] < 86))
               maze.Arm[i].Variability.delta++;
             if (maze.Arm[i].Variability.delta >= 49750)
             {
@@ -325,7 +326,7 @@ void Maze_Rat_Detect(void)
           }
           case 4:
           {
-            if ((ADC_BUF[i] > 50) && (ADC_BUF[i] < 100))
+            if ((ADC_BUF[i] > 50) && (ADC_BUF[i] < 101))
               maze.Arm[i].Variability.delta++;
             if (maze.Arm[i].Variability.delta >= 48500)
             {
@@ -427,7 +428,7 @@ void Maze_Rat_Detect(void)
           }
           case 7:
           {
-            if ((ADC_BUF[i] > 57) && (ADC_BUF[i] < 90))
+            if ((ADC_BUF[i] > 55) && (ADC_BUF[i] < 90))
               maze.Arm[i].Variability.delta++;
             if (maze.Arm[i].Variability.delta >= 48500)
             {
@@ -480,9 +481,9 @@ void Maze_Rat_Detect(void)
         {
           case 0:
           {
-            if ((ADC_BUF[i] > 27) && (ADC_BUF[i] < 36))
+            if ((ADC_BUF[i] > 23) && (ADC_BUF[i] < 32))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 45000)
+            if (maze.Arm[i].Variability.delta >= 46000)
             {
               Maze_Reset_Each_Arm_Delta();
               maze.isDataChange = YES;
@@ -492,9 +493,9 @@ void Maze_Rat_Detect(void)
           }
           case 1:
           {
-            if ((ADC_BUF[i] > 30) && (ADC_BUF[i] < 36))
+            if ((ADC_BUF[i] > 22) && (ADC_BUF[i] < 32)) /* 0905 1536 1, 4, 5, 8 up 2 units */
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 43500)
+            if (maze.Arm[i].Variability.delta >= 44500)
             {
               Maze_Reset_Each_Arm_Delta();
               maze.isDataChange = YES;
@@ -504,19 +505,7 @@ void Maze_Rat_Detect(void)
           }
           case 2:
           {
-            if ((ADC_BUF[i] > 33) && (ADC_BUF[i] < 41))
-              maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 44000)
-            {
-              Maze_Reset_Each_Arm_Delta();
-              maze.isDataChange = YES;
-              maze.State = RAT_NOT_ENTERED;
-            }              
-            break;
-          }
-          case 3:
-          {
-            if ((ADC_BUF[i] > 26) && (ADC_BUF[i] < 34))
+            if ((ADC_BUF[i] > 32) && (ADC_BUF[i] < 40))
               maze.Arm[i].Variability.delta++;
             if (maze.Arm[i].Variability.delta >= 45000)
             {
@@ -526,11 +515,23 @@ void Maze_Rat_Detect(void)
             }              
             break;
           }
+          case 3:
+          {
+            if ((ADC_BUF[i] > 24) && (ADC_BUF[i] < 32))
+              maze.Arm[i].Variability.delta++;
+            if (maze.Arm[i].Variability.delta >= 46000)
+            {
+              Maze_Reset_Each_Arm_Delta();
+              maze.isDataChange = YES;
+              maze.State = RAT_NOT_ENTERED;
+            }              
+            break;
+          }
           case 4:
           {
-            if ((ADC_BUF[i] > 21) && (ADC_BUF[i] < 31))
+            if ((ADC_BUF[i] > 17) && (ADC_BUF[i] < 28))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 43000)
+            if (maze.Arm[i].Variability.delta >= 44000)
             {
               Maze_Reset_Each_Arm_Delta();
               maze.isDataChange = YES;
@@ -540,9 +541,9 @@ void Maze_Rat_Detect(void)
           }
           case 5:
           {
-            if ((ADC_BUF[i] > 28) && (ADC_BUF[i] < 36))
+            if ((ADC_BUF[i] > 22) && (ADC_BUF[i] < 30))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 44000)
+            if (maze.Arm[i].Variability.delta >= 45000)
             {
               Maze_Reset_Each_Arm_Delta();
               maze.isDataChange = YES;
@@ -552,9 +553,9 @@ void Maze_Rat_Detect(void)
           }
           case 6:
           {
-            if ((ADC_BUF[i] > 24) && (ADC_BUF[i] < 30))
+            if ((ADC_BUF[i] > 22) && (ADC_BUF[i] < 28))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 43500)
+            if (maze.Arm[i].Variability.delta >= 44500)
             {
               Maze_Reset_Each_Arm_Delta();
               maze.isDataChange = YES;
@@ -564,9 +565,9 @@ void Maze_Rat_Detect(void)
           }
           case 7:
           {
-            if ((ADC_BUF[i] > 34) && (ADC_BUF[i] < 42))
+            if ((ADC_BUF[i] > 20) && (ADC_BUF[i] < 39))
               maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 44000)
+            if (maze.Arm[i].Variability.delta >= 45000)
             {
               Maze_Reset_Each_Arm_Delta();
               maze.isDataChange = YES;
