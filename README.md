@@ -12,7 +12,7 @@ We place an IR distance sensor(Sharp 2Y0A21) at the end of each arm to detect th
 - STM32F407 Discovery * 1
 - Sharp 2Y0A21 IR distance sensor * 8
 ## Screenshot & Picture
-### UI
+### UI ([project link](https://github.com/flawless0714/8_arm_Maze/tree/wired-transmit))
 ![Screen](./UI.png)
 ### Training
 ![Screen](./training.png)
