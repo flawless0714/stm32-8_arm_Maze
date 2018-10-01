@@ -11,8 +11,9 @@ We place an IR distance sensor(Sharp 2Y0A21) at the end of each arm to detect th
 ## Hardware Specification
 - STM32F407 Discovery * 1
 - Sharp 2Y0A21 IR distance sensor * 8
+- Wifi module esp8266 * 1 (not used in this branch due to the setup time is too long(during PC connecting to the module) for now, hence we use wired communication(UART) temporarily).
 ## Screenshot & Picture
-### UI ([project link](https://github.com/flawless0714/8_arm_Maze/tree/wired-transmit))
+### UI ([UI project link](https://github.com/flawless0714/8_arm_Maze/tree/wired-transmit))
 ![Screen](./UI.png)
 ### Training
 ![Screen](./training.png)
