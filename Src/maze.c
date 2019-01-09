@@ -6,7 +6,6 @@
 #include "esp8266.h"
 #include "uart_maze.h"
 
-int g_test;
 extern ADC_HandleTypeDef hadc1;
 extern __IO uint32_t ADC_BUF[8];
 extern uint8_t str[5];
