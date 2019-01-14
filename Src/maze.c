@@ -291,7 +291,8 @@ void Maze_Rat_Detect(void)
           }
           case 3:
           {
-            if ((ADC_BUF[i] > 45) && (ADC_BUF[i] < 86))
+            /* for old sensor set, the minimum is 45, maximum is 86 */
+            if ((ADC_BUF[i] > 47) && (ADC_BUF[i] < 99)) 
               maze.Arm[i].Variability.delta++;
             if (maze.Arm[i].Variability.delta >= 49750)
             {
