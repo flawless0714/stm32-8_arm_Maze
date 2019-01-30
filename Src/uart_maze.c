@@ -125,6 +125,10 @@ void uartTransmission(void)
                         mazeTrans.Tstate = TRAINING_RUNNING;
                         maze.isDataChange = NO;                        
                     }
+                    else
+                    {
+                        mazeTrans.Tstate = DATA_SEND_DONE;
+                    }
 					memset(&esp8266_recvBuffer, 0, RECV_BUFFER_SIZE);
                     break;
             }
