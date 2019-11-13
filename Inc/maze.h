@@ -45,7 +45,7 @@ typedef enum
   */ 
 typedef struct
 {
-  uint32_t startTick; /* no use yet */
+  uint32_t startTick; /* we use this to identify if the arm has entered since training start */
   uint32_t endTick; /* no use yet  */
   uint32_t delta;
 }ADC_Variability;
@@ -75,6 +75,74 @@ typedef struct
   uint32_t currentTick; /* cd between state change */
 }Maze;
 
+// arm number, for array indexing, we start from zero
+#define ARM_1 0
+#define ARM_2 1
+#define ARM_3 2
+#define ARM_4 3
+#define ARM_5 4
+#define ARM_6 5
+#define ARM_7 6
+#define ARM_8 7
+
+// arm-specific IR dist. sensor characteristic (RAT_NOT_ENTERED)
+#define ARM_1_N_L 44 // arm 1, **N**ot entered, **L**ower bound
+#define ARM_1_N_U 100 // arm 1, **N**ot entered, **U**pper bound
+#define ARM_2_N_L 53
+#define ARM_2_N_U 101
+#define ARM_3_N_L 52
+#define ARM_3_N_U 98
+#define ARM_4_N_L 47
+#define ARM_4_N_U 99
+#define ARM_5_N_L 50
+#define ARM_5_N_U 101
+#define ARM_6_N_L 47
+#define ARM_6_N_U 100
+#define ARM_7_N_L 43 
+#define ARM_7_N_U 100 
+#define ARM_8_N_L 55
+#define ARM_8_N_U 90
+
+// arm-specific IR dist. sensor characteristic (RAT_ENTERED)
+#define ARM_1_E_L 23 // arm 1, **E**ntered, **L**ower bound
+#define ARM_1_E_U 32 // arm 1, **E**ntered, **U**pper bound
+#define ARM_2_E_L 22
+#define ARM_2_E_U 32
+#define ARM_3_E_L 32
+#define ARM_3_E_U 40
+#define ARM_4_E_L 24
+#define ARM_4_E_U 32
+#define ARM_5_E_L 17
+#define ARM_5_E_U 28
+#define ARM_6_E_L 22
+#define ARM_6_E_U 30
+#define ARM_7_E_L 22
+#define ARM_7_E_U 28
+#define ARM_8_E_L 20
+#define ARM_8_E_U 39
+
+// arm-specific trigger threshold (RAT_NOT_ENTERED)
+#define ARM_1_N_THRES 49000
+#define ARM_2_N_THRES 48500
+#define ARM_3_N_THRES 48500
+#define ARM_4_N_THRES 49750
+#define ARM_5_N_THRES 48500
+#define ARM_6_N_THRES 48500
+#define ARM_7_N_THRES 48500
+#define ARM_8_N_THRES 48500
+
+// arm-specific trigger threshold (RAT_ENTERED)
+#define ARM_1_E_THRES 46000
+#define ARM_2_E_THRES 44500
+#define ARM_3_E_THRES 45000
+#define ARM_4_E_THRES 46000
+#define ARM_5_E_THRES 44000
+#define ARM_6_E_THRES 45000
+#define ARM_7_E_THRES 44500
+#define ARM_8_E_THRES 45000
+
+#define is_IN_RANGE(arm_num, upper, lower) ((ADC_BUF[arm_num] > lower) && \
+                   (ADC_BUF[arm_num] < upper))
 
 #ifdef __cplusplus
 }

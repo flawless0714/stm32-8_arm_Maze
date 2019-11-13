@@ -46,6 +46,49 @@ void Maze_Init(void)
   maze.currentTick = 0;
 }
 
+// arm leaving routine
+static inline void arm_leaving(void)
+{
+  Maze_Reset_Each_Arm_Delta();
+  maze.isDataChange = YES;
+  maze.State = RAT_NOT_ENTERED;
+}
+
+// arm entered routine
+static inline void arm_entered(int arm_num)
+{
+  if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 49u))  /* prevent access of address out of array */
+    *maze.EnterSeqPtr++ = arm_num + 1; /* arm 1~8 */
+
+  Maze_Reset_Each_Arm_Delta();
+
+  maze.State = RAT_ENTERED;
+
+  if (maze.Arm[arm_num].Variability.startTick == 0) /* isLastArmEntered ? */
+  {
+    maze.Arm[arm_num].Variability.startTick++;
+  }
+  else
+  {
+    maze.Arm[arm_num].ShortTerm_err++;
+  }
+
+  maze.isDataChange = YES;
+  
+  maze.LastEnteredArm = arm_num;
+  if (maze.Arm[arm_num].Food == FOOD_EXIST) /* food counting */
+  {
+    maze.Arm[arm_num].Food = FOOD_ATE;
+    maze.FoodCount++;
+    maze.isDataChange = YES;
+  }
+  else if(maze.Arm[arm_num].Food == NO_FOOD && maze.Arm[arm_num].LongTerm_err == 0)
+  {
+    maze.Arm[arm_num].LongTerm_err++;
+    maze.isDataChange = YES;
+  }
+}
+
 void Maze_Rat_Detect(void)
 {// TODO bring this back on release version
   if (mazeTrans.Tstate == WAIT_KNOCK_DOOR) /* training have not ready to start */
@@ -182,282 +225,72 @@ void Maze_Rat_Detect(void)
       {
         break;
       }
-       for (i = 0; i < 8; i++)
+      for (i = ARM_1; i < (ARM_8 + 1); i++)
       {
         switch (i) /* use another switch case to dealing with different characteristic of IRs, TODO: the value can be macroed */
         {
-          case 0:
+          case ARM_1:
           {
-            if (ADC_BUF[i] > 44 && ADC_BUF[i] < 100)
-              maze.Arm[i].Variability.delta++;  
-            if (maze.Arm[i].Variability.delta >= 49000)
-            {
-              if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))  /* prevent access of address out of array */
-                *maze.EnterSeqPtr++ = (i + 1); /* arm 1~8 */
-              Maze_Reset_Each_Arm_Delta();
-              maze.State = RAT_ENTERED;
-              if (maze.Arm[i].Variability.startTick == 0) /* isLastArmEntered ? */
-              {
-								maze.Arm[i].Variability.startTick++;
-              }
-							else
-							{
-								maze.Arm[i].ShortTerm_err++;
-							}
-							maze.isDataChange = YES;
-              
-              maze.LastEnteredArm = i;
-              if (maze.Arm[i].Food == FOOD_EXIST) /* food counting */
-              {
-                maze.Arm[i].Food = FOOD_ATE;
-                maze.FoodCount++;
-                maze.isDataChange = YES;
-              }
-              else if(maze.Arm[i].Food == NO_FOOD && maze.Arm[i].LongTerm_err == 0)
-              {
-                maze.Arm[i].LongTerm_err++;
-                maze.isDataChange = YES;
-              }
-            }
+            if (is_IN_RANGE(ARM_1, ARM_1_N_U, ARM_1_N_L))
+              maze.Arm[ARM_1].Variability.delta++;  
+            if (maze.Arm[ARM_1].Variability.delta >= ARM_1_N_THRES)
+              arm_entered(ARM_1);
             break;
           }
-          case 1:
+          case ARM_2:
           {
-            if (ADC_BUF[1] > 53 && ADC_BUF[1] < 101)
-              maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 48500)
-            {
-              if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))  /* prevent access of address out of array */
-                *maze.EnterSeqPtr++ = (i + 1); /* arm 1~8 */
-              Maze_Reset_Each_Arm_Delta();
-              maze.State = RAT_ENTERED;
-              if (maze.Arm[i].Variability.startTick == 0) /* isLastArmEntered ? */
-              {
-								maze.Arm[i].Variability.startTick++;
-              }
-							else
-							{
-								maze.Arm[i].ShortTerm_err++;
-							}
-							maze.isDataChange = YES;            
-              maze.LastEnteredArm = i;
-              if (maze.Arm[i].Food == FOOD_EXIST)
-              {
-                maze.Arm[i].Food = FOOD_ATE;
-                maze.FoodCount++;
-                maze.isDataChange = YES;
-              }
-              else if(maze.Arm[i].Food == NO_FOOD && maze.Arm[i].LongTerm_err == 0)
-              {
-                maze.Arm[i].LongTerm_err++;
-                maze.isDataChange = YES;
-              }                
-            }
+            if (is_IN_RANGE(ARM_2, ARM_2_N_U, ARM_2_N_L))
+              maze.Arm[ARM_2].Variability.delta++;
+            if (maze.Arm[ARM_2].Variability.delta >= ARM_2_N_THRES)
+              arm_entered(ARM_2);
             break;
           }
-          case 2:
+          case ARM_3:
           {
-            if ((ADC_BUF[i] > 52) && (ADC_BUF[i] < 98))
-              maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 48500)
-            {
-              if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))  /* prevent access of address out of array */
-                *maze.EnterSeqPtr++ = (i + 1); /* arm 1~8 */
-              Maze_Reset_Each_Arm_Delta();
-              maze.State = RAT_ENTERED;
-              if (maze.Arm[i].Variability.startTick == 0) /* isLastArmEntered ? */
-              {
-								maze.Arm[i].Variability.startTick++;
-              }
-							else
-							{
-								maze.Arm[i].ShortTerm_err++;
-							}
-							maze.isDataChange = YES;
-              maze.LastEnteredArm = i;
-              if (maze.Arm[i].Food == FOOD_EXIST)
-              {
-                maze.Arm[i].Food = FOOD_ATE;
-                maze.FoodCount++;
-                maze.isDataChange = YES;
-              }
-              else if(maze.Arm[i].Food == NO_FOOD && maze.Arm[i].LongTerm_err == 0)
-              {
-                maze.Arm[i].LongTerm_err++;
-                maze.isDataChange = YES;
-              }                
-            }
+            if (is_IN_RANGE(ARM_3, ARM_3_N_U, ARM_3_N_L))
+              maze.Arm[ARM_3].Variability.delta++;
+            if (maze.Arm[ARM_3].Variability.delta >= ARM_3_N_THRES)
+              arm_entered(ARM_3);
             break;
           }
-          case 3:
+          case ARM_4:
           {
-            /* for old sensor set, the minimum is 45, maximum is 86 */
-            if ((ADC_BUF[i] > 47) && (ADC_BUF[i] < 99)) 
-              maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 49750)
-            {
-              if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))  /* prevent access of address out of array */
-                *maze.EnterSeqPtr++ = (i + 1); /* arm 1~8 */
-              Maze_Reset_Each_Arm_Delta();
-              maze.State = RAT_ENTERED;
-              if (maze.Arm[i].Variability.startTick == 0) /* isLastArmEntered ? */
-              {
-								maze.Arm[i].Variability.startTick++;
-              }
-							else
-							{
-								maze.Arm[i].ShortTerm_err++;
-							}
-							maze.isDataChange = YES;
-              maze.LastEnteredArm = i;
-              if (maze.Arm[i].Food == FOOD_EXIST)
-              {
-                maze.Arm[i].Food = FOOD_ATE;
-                maze.FoodCount++;
-                maze.isDataChange = YES;
-              }
-              else if(maze.Arm[i].Food == NO_FOOD && maze.Arm[i].LongTerm_err == 0)
-              {
-                maze.Arm[i].LongTerm_err++;
-                maze.isDataChange = YES;
-              }
-            }
+            if (is_IN_RANGE(ARM_4, ARM_4_N_U, ARM_4_N_L)) 
+              maze.Arm[ARM_4].Variability.delta++;
+            if (maze.Arm[ARM_4].Variability.delta >= ARM_4_N_THRES)
+              arm_entered(ARM_4);
             break;
           }
-          case 4:
+          case ARM_5:
           {
-            if ((ADC_BUF[i] > 50) && (ADC_BUF[i] < 101))
-              maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 48500)
-            {
-              if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))  /* prevent access of address out of array */
-                *maze.EnterSeqPtr++ = (i + 1); /* arm 1~8 */
-              Maze_Reset_Each_Arm_Delta();
-              maze.State = RAT_ENTERED;
-              if (maze.Arm[i].Variability.startTick == 0) /* isLastArmEntered ? */
-              {
-								maze.Arm[i].Variability.startTick++;
-              }
-							else
-							{
-								maze.Arm[i].ShortTerm_err++;
-							}
-							maze.isDataChange = YES;             
-              maze.LastEnteredArm = i;
-              if (maze.Arm[i].Food == FOOD_EXIST)
-              {
-                maze.Arm[i].Food = FOOD_ATE;
-                maze.FoodCount++;
-                maze.isDataChange = YES;
-              }
-              else if(maze.Arm[i].Food == NO_FOOD && maze.Arm[i].LongTerm_err == 0)
-              {
-                maze.Arm[i].LongTerm_err++;
-                maze.isDataChange = YES;
-              }                
-            }
+            if (is_IN_RANGE(ARM_5, ARM_5_N_U, ARM_5_N_L))
+              maze.Arm[ARM_5].Variability.delta++;
+            if (maze.Arm[ARM_5].Variability.delta >= ARM_5_N_THRES)
+              arm_entered(ARM_5);
             break;
           }
-          case 5:
+          case ARM_6:
           {
-            if ((ADC_BUF[i] > 47) && (ADC_BUF[i] < 100))
-              maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 48500)
-            {
-              if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))   /* prevent access of address out of array */
-                *maze.EnterSeqPtr++ = (i + 1);  /* arm 1~8 */
-              Maze_Reset_Each_Arm_Delta();  /* reset to prevent duplicated determination */
-              maze.State = RAT_ENTERED;
-              if (maze.Arm[i].Variability.startTick == 0) /* isLastArmEntered ? */
-              {
-								maze.Arm[i].Variability.startTick++;
-              }
-							else
-							{
-								maze.Arm[i].ShortTerm_err++;
-							}
-							maze.isDataChange = YES;    
-              maze.LastEnteredArm = i;
-              if (maze.Arm[i].Food == FOOD_EXIST)
-              {
-                maze.Arm[i].Food = FOOD_ATE;
-                maze.FoodCount++;
-                maze.isDataChange = YES;
-              }
-              else if(maze.Arm[i].Food == NO_FOOD && maze.Arm[i].LongTerm_err == 0)
-              {
-                maze.Arm[i].LongTerm_err++;
-                maze.isDataChange = YES;
-              }
-            }
+            if (is_IN_RANGE(ARM_6, ARM_6_N_U, ARM_6_N_L))
+              maze.Arm[ARM_6].Variability.delta++;
+            if (maze.Arm[ARM_6].Variability.delta >= ARM_6_N_THRES)
+              arm_entered(ARM_6);
             break;
           }
-          case 6:
+          case ARM_7:
           {
-            if ((ADC_BUF[i] > 43) && (ADC_BUF[i] < 100))
-              maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 48500)
-            {
-              if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))  /* prevent access of address out of array */
-                *maze.EnterSeqPtr++ = (i + 1); /* arm 1~8 */
-              Maze_Reset_Each_Arm_Delta();
-              maze.State = RAT_ENTERED;
-              if (maze.Arm[i].Variability.startTick == 0) /* isLastArmEntered ? */
-              {
-								maze.Arm[i].Variability.startTick++;
-              }
-							else
-							{
-								maze.Arm[i].ShortTerm_err++;
-							}
-							maze.isDataChange = YES;             
-              maze.LastEnteredArm = i;
-              if (maze.Arm[i].Food == FOOD_EXIST)
-              {
-                maze.Arm[i].Food = FOOD_ATE;
-                maze.FoodCount++;
-                maze.isDataChange = YES;
-              }
-              else if(maze.Arm[i].Food == NO_FOOD && maze.Arm[i].LongTerm_err == 0)
-              {
-                maze.Arm[i].LongTerm_err++;
-                maze.isDataChange = YES;
-              }                
-            }
+            if (is_IN_RANGE(ARM_7, ARM_7_N_U, ARM_7_N_L))
+              maze.Arm[ARM_7].Variability.delta++;
+            if (maze.Arm[ARM_7].Variability.delta >= ARM_7_N_THRES)
+              arm_entered(ARM_7);
             break;
           }
-          case 7:
+          case ARM_8:
           {
-            if ((ADC_BUF[i] > 55) && (ADC_BUF[i] < 90))
-              maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 48500)
-            {
-              if ((void*) maze.EnterSeqPtr != (void*) (&maze.EnterSeq + 50U))  /* prevent access of address out of array */
-                *maze.EnterSeqPtr++ = (i + 1); /* arm 1~8 */
-              Maze_Reset_Each_Arm_Delta();
-              maze.State = RAT_ENTERED;
-              if (maze.Arm[i].Variability.startTick == 0) /* isLastArmEntered ? */
-              {
-								maze.Arm[i].Variability.startTick++;
-              }
-							else
-							{
-								maze.Arm[i].ShortTerm_err++;
-							}
-							maze.isDataChange = YES;             
-              maze.LastEnteredArm = i;
-              if (maze.Arm[i].Food == FOOD_EXIST)
-              {
-                maze.Arm[i].Food = FOOD_ATE;
-                maze.FoodCount++;
-                maze.isDataChange = YES;
-              }
-              else if(maze.Arm[i].Food == NO_FOOD && maze.Arm[i].LongTerm_err == 0)
-              {
-                maze.Arm[i].LongTerm_err++;
-                maze.isDataChange = YES;
-              }                
-            }
+            if (is_IN_RANGE(ARM_8, ARM_8_N_U, ARM_8_N_L))
+              maze.Arm[ARM_8].Variability.delta++;
+            if (maze.Arm[ARM_8].Variability.delta >= ARM_8_N_THRES)
+              arm_entered(ARM_8);
             break;
           }
         }
@@ -467,7 +300,7 @@ void Maze_Rat_Detect(void)
     case RAT_ENTERED: /* RAT_NOT_ENTERED is triggered by Da */
     {
       if ((maze.currentTick + 950) >= HAL_GetTick()) /* cd between state change */
-      {				
+      {
         break;
       }
 			i = maze.LastEnteredArm;
@@ -477,105 +310,73 @@ void Maze_Rat_Detect(void)
         maze.isDataChange = YES;
         return;
       }
-        switch (maze.LastEnteredArm) /* use another switch case to dealing with different characteristic of IRs, TODO: the value can be macroed */
+      switch (maze.LastEnteredArm) /* use another switch case to dealing with different characteristic of IRs, TODO: the value can be macroed */
+      {
+        case ARM_1:
         {
-          case 0:
-          {
-            if ((ADC_BUF[i] > 23) && (ADC_BUF[i] < 32))
-              maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 46000)
-            {
-              Maze_Reset_Each_Arm_Delta();
-              maze.isDataChange = YES;
-              maze.State = RAT_NOT_ENTERED;              
-            }              
-            break;
-          }
-          case 1:
-          {
-            if ((ADC_BUF[i] > 22) && (ADC_BUF[i] < 32)) /* 0905 1536 1, 4, 5, 8 up 2 units */
-              maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 44500)
-            {
-              Maze_Reset_Each_Arm_Delta();
-              maze.isDataChange = YES;
-              maze.State = RAT_NOT_ENTERED;
-            }              
-            break;
-          }
-          case 2:
-          {
-            if ((ADC_BUF[i] > 32) && (ADC_BUF[i] < 40))
-              maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 45000)
-            {
-              Maze_Reset_Each_Arm_Delta();
-              maze.isDataChange = YES;
-              maze.State = RAT_NOT_ENTERED;
-            }              
-            break;
-          }
-          case 3:
-          {
-            if ((ADC_BUF[i] > 24) && (ADC_BUF[i] < 32))
-              maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 46000)
-            {
-              Maze_Reset_Each_Arm_Delta();
-              maze.isDataChange = YES;
-              maze.State = RAT_NOT_ENTERED;
-            }              
-            break;
-          }
-          case 4:
-          {
-            if ((ADC_BUF[i] > 17) && (ADC_BUF[i] < 28))
-              maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 44000)
-            {
-              Maze_Reset_Each_Arm_Delta();
-              maze.isDataChange = YES;
-              maze.State = RAT_NOT_ENTERED;
-            }              
-            break;
-          }
-          case 5:
-          {
-            if ((ADC_BUF[i] > 22) && (ADC_BUF[i] < 30))
-              maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 45000)
-            {
-              Maze_Reset_Each_Arm_Delta();
-              maze.isDataChange = YES;
-              maze.State = RAT_NOT_ENTERED;
-            }              
-            break;
-          }
-          case 6:
-          {
-            if ((ADC_BUF[i] > 22) && (ADC_BUF[i] < 28))
-              maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 44500)
-            {
-              Maze_Reset_Each_Arm_Delta();
-              maze.isDataChange = YES;
-              maze.State = RAT_NOT_ENTERED;
-            }              
-            break;
-          }
-          case 7:
-          {
-            if ((ADC_BUF[i] > 20) && (ADC_BUF[i] < 39))
-              maze.Arm[i].Variability.delta++;
-            if (maze.Arm[i].Variability.delta >= 45000)
-            {
-              Maze_Reset_Each_Arm_Delta();
-              maze.isDataChange = YES;
-              maze.State = RAT_NOT_ENTERED;
-            }              
-            break;
-          }
+          if (is_IN_RANGE(ARM_1, ARM_1_E_U, ARM_1_E_L))
+            maze.Arm[ARM_1].Variability.delta++;
+          if (maze.Arm[ARM_1].Variability.delta >= ARM_1_E_THRES)
+            arm_leaving(); 
+          break;
         }
+        case ARM_2:
+        {
+          if (is_IN_RANGE(ARM_2, ARM_2_E_U, ARM_2_E_L)) /* 0905 1536 1, 4, 5, 8 up 2 units */
+            maze.Arm[ARM_2].Variability.delta++;
+          if (maze.Arm[ARM_2].Variability.delta >= ARM_2_E_THRES)
+            arm_leaving();            
+          break;
+        }
+        case ARM_3:
+        {
+          if (is_IN_RANGE(ARM_3, ARM_3_E_U, ARM_3_E_L))
+            maze.Arm[ARM_3].Variability.delta++;
+          if (maze.Arm[ARM_3].Variability.delta >= ARM_3_E_THRES)
+            arm_leaving();   
+          break;
+        }
+        case ARM_4:
+        {
+          if (is_IN_RANGE(ARM_4, ARM_4_E_U, ARM_4_E_L))
+            maze.Arm[ARM_4].Variability.delta++;
+          if (maze.Arm[ARM_4].Variability.delta >= ARM_4_E_THRES)
+            arm_leaving();   
+          break;
+        }
+        case ARM_5:
+        {
+          if (is_IN_RANGE(ARM_5, ARM_5_E_U, ARM_5_E_L))
+            maze.Arm[ARM_5].Variability.delta++;
+          if (maze.Arm[ARM_5].Variability.delta >= ARM_5_E_THRES)
+            arm_leaving();           
+          break;
+        }
+        case ARM_6:
+        {
+          if (is_IN_RANGE(ARM_6, ARM_6_E_U, ARM_6_E_L))
+            maze.Arm[ARM_6].Variability.delta++;
+          if (maze.Arm[ARM_6].Variability.delta >= ARM_6_E_THRES)
+            arm_leaving();        
+          break;
+        }
+        case ARM_7:
+        {
+          if (is_IN_RANGE(ARM_7, ARM_7_E_U, ARM_7_E_L))
+            maze.Arm[ARM_7].Variability.delta++;
+          if (maze.Arm[ARM_7].Variability.delta >= ARM_7_E_THRES)
+            arm_leaving();          
+          break;
+        }
+        case ARM_8:
+        {
+          if (is_IN_RANGE(ARM_8, ARM_8_E_U, ARM_8_E_L))
+            maze.Arm[ARM_8].Variability.delta++;
+          if (maze.Arm[ARM_8].Variability.delta >= ARM_8_E_THRES)
+            arm_leaving();           
+          break;
+        }
+      }
       
       return;
     }
